@@ -1,0 +1,33 @@
+* {
+  font-family: Georgia, serif;
+}
+
+Button {
+  border-radius: "0px";
+}
+
+.ant-menu-dark .ant-menu-item-selected {
+  background-color: #FF7900;
+}
+
+.anticon {
+  font-size: 19px;
+}
+
+.item {
+  margin-top: 50px;
+}
+
+.Input {
+  border: 0px;
+}
+
+
+.custom-sider .ant-layout-sider-trigger {
+  background-color: #000000;
+}
+
+
+.custom-sider .ant-layout-sider-trigger i {
+  color: #ffffff; 
+}
