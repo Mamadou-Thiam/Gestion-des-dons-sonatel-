@@ -8,6 +8,7 @@ Button {
 
 .ant-menu-dark .ant-menu-item-selected {
   background-color: #FF7900;
+  border-radius: 0px;
 }
 
 .anticon {
@@ -31,3 +32,16 @@ Button {
 .custom-sider .ant-layout-sider-trigger i {
   color: #ffffff; 
 }
+
+
+
+.custom-sider .ant-menu-item-icon {
+  font-size: 30px;
+  
+}
+
+.custom-sider .ant-menu-item {
+  margin-bottom: 20px; 
+}
+
+
