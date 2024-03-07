@@ -6,7 +6,10 @@ interface DataGroupe {
   codeMarchand: string;
   rccm: string;
   numeroTelephone: string;
-  typeGroupe:string;
+  typeGroupe: string;
+  tag: string;
+  logo: string;
+  supprime: boolean;
 }
 
 export default DataGroupe;

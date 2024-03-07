@@ -10,7 +10,7 @@ import {
 } from "@ant-design/icons";
 import axios from "axios";
 import { Link } from "react-router-dom";
-import Chart from 'chart.js/auto';
+import Chart from "chart.js/auto";
 
 const { Title } = Typography;
 
@@ -34,17 +34,29 @@ const Dashboard: React.FC = () => {
     new Chart(ctx, {
       type: "pie",
       data: {
-        labels: ["Patients", "Catégories", "Groupes", "Thèmes Campagnes", "Campagnes"],
+        labels: [
+          "Patients",
+          "Catégories",
+          "Groupes",
+          "Thèmes Campagnes",
+          "Campagnes",
+        ],
         datasets: [
           {
             label: "Nombre",
-            data: [patientCount, categorieCount, groupeCount, campagneCount, countCampagne],
+            data: [
+              patientCount,
+              categorieCount,
+              groupeCount,
+              campagneCount,
+              countCampagne,
+            ],
             backgroundColor: [
-              "#FFCA28", 
-              "#3949AB", 
-              "#4CAF50", 
-              "#9575CD", 
-              "#FF5252", 
+              "#FFCA28",
+              "#3949AB",
+              "#4CAF50",
+              "#9575CD",
+              "#FF5252",
             ],
             borderColor: "#fff",
             borderWidth: 1,
@@ -73,17 +85,29 @@ const Dashboard: React.FC = () => {
     new Chart(ctx, {
       type: "bar",
       data: {
-        labels: ["Patients", "Catégories", "Groupes", "Thèmes Campagnes", "Campagnes"],
+        labels: [
+          "Patients",
+          "Catégories",
+          "Groupes",
+          "Thèmes Campagnes",
+          "Campagnes",
+        ],
         datasets: [
           {
             label: "Nombre",
-            data: [patientCount, categorieCount, groupeCount, campagneCount, countCampagne],
+            data: [
+              patientCount,
+              categorieCount,
+              groupeCount,
+              campagneCount,
+              countCampagne,
+            ],
             backgroundColor: [
-              "#FFCA28", 
-              "#3949AB", 
-              "#4CAF50", 
-              "#9575CD", 
-              "#FF5252", 
+              "#FFCA28",
+              "#3949AB",
+              "#4CAF50",
+              "#9575CD",
+              "#FF5252",
             ],
             borderColor: "#fff",
             borderWidth: 1,
@@ -108,19 +132,29 @@ const Dashboard: React.FC = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const ficheResponse = await axios.get("https://wesaloapi-dsiwessalo-dev.apps.malaaw-rec.orange-sonatel.com/api/fiche-patients/count?supprime.equals=false");
+        const ficheResponse = await axios.get(
+          "/fiche-patients/count?supprime.equals=false"
+        );
         setPatientCount(ficheResponse.data);
 
-        const categorieResponse = await axios.get("https://wesaloapi-dsiwessalo-dev.apps.malaaw-rec.orange-sonatel.com/api/categorie-themes/count?supprime.equals=false");
+        const categorieResponse = await axios.get(
+          "/categorie-themes/count?supprime.equals=false"
+        );
         setCategorieCount(categorieResponse.data);
 
-        const groupeResponse = await axios.get("https://wesaloapi-dsiwessalo-dev.apps.malaaw-rec.orange-sonatel.com/api/groupes/count?supprime.equals=false");
+        const groupeResponse = await axios.get(
+          "/groupes/count?supprime.equals=false"
+        );
         setGroupeCount(groupeResponse.data);
 
-        const campagneResponse = await axios.get("https://wesaloapi-dsiwessalo-dev.apps.malaaw-rec.orange-sonatel.com/api/theme-campagnes/count?supprime.equals=false");
+        const campagneResponse = await axios.get(
+          "/theme-campagnes/count?supprime.equals=false"
+        );
         setCampagneCount(campagneResponse.data);
 
-        const CampagneResponse = await axios.get("https://wesaloapi-dsiwessalo-dev.apps.malaaw-rec.orange-sonatel.com/api/campagnes/count?supprime.equals=false");
+        const CampagneResponse = await axios.get(
+          "/campagnes/count?supprime.equals=false"
+        );
         setCountCampagne(CampagneResponse.data);
         setDataLoaded(true);
       } catch (error) {
@@ -129,7 +163,6 @@ const Dashboard: React.FC = () => {
     };
 
     fetchData();
-
   }, []);
 
   useEffect(() => {
@@ -150,7 +183,7 @@ const Dashboard: React.FC = () => {
               <Statistic
                 title="Patients"
                 value={patientCount}
-                valueStyle={{ color: "#FFCA28" }} 
+                valueStyle={{ color: "#FFCA28" }}
                 prefix={<UserOutlined />}
               />
             </Card>
@@ -163,7 +196,7 @@ const Dashboard: React.FC = () => {
               <Statistic
                 title="Thème Campagnes"
                 value={campagneCount}
-                valueStyle={{ color: "#3949AB" }} 
+                valueStyle={{ color: "#3949AB" }}
                 prefix={<ContainerOutlined />}
               />
             </Card>
@@ -175,7 +208,7 @@ const Dashboard: React.FC = () => {
               <Statistic
                 title="Groupes"
                 value={groupeCount}
-                valueStyle={{ color: "#4CAF50" }} 
+                valueStyle={{ color: "#4CAF50" }}
                 prefix={<TeamOutlined />}
               />
             </Card>
@@ -187,19 +220,19 @@ const Dashboard: React.FC = () => {
               <Statistic
                 title="Catégorie Thèmes"
                 value={categorieCount}
-                valueStyle={{ color: "#9575CD" }} 
+                valueStyle={{ color: "#9575CD" }}
                 prefix={<AppstoreAddOutlined />}
               />
             </Card>
           </Link>
         </Col>
         <Col span={4}>
-          <Link to="categorieTheme">
+          <Link to="campagne">
             <Card bordered={false} className="dashboard-card">
               <Statistic
                 title="Campagnes"
                 value={countCampagne}
-                valueStyle={{ color: "#FF5252" }} 
+                valueStyle={{ color: "#FF5252" }}
                 prefix={<CopyrightCircleOutlined />}
               />
             </Card>
@@ -207,7 +240,11 @@ const Dashboard: React.FC = () => {
         </Col>
       </Row>
 
-      <Row gutter={16} justify="start" style={{ marginTop: "30px" ,alignItems:"center"}}>
+      <Row
+        gutter={16}
+        justify="start"
+        style={{ marginTop: "30px", alignItems: "center" }}
+      >
         <Col span={12}>
           <div className="canvas-container">
             <canvas id="myChart"></canvas>

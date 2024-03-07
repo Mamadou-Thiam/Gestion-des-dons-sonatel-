@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { fetchPatients } from "../../services/PatientService";
 import {
   Table,
   Button,
@@ -17,12 +16,14 @@ import {
   PlusOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { DataPatient } from "../../model/fiche-patient.model";
+import DataGroupe from "../../model/Groupe.model";
+import { fetchGroupes } from "../../services/GroupeService";
 
 const size = "large";
 
-const PatientList: React.FC = () => {
-  const [data, setData] = useState<DataPatient[]>([]);
+const GroupeList: React.FC = () => {
+  // Déclaration des états du composant
+  const [data, setData] = useState<DataGroupe[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -33,26 +34,26 @@ const PatientList: React.FC = () => {
     filter: "",
   });
 
-  const handleDeletePatient = (id: string) => {
-    const patientId = parseInt(id, 10); 
+  // Fonction pour supprimer un patient en fonction de son ID
+  const handleDeleteGroupe = (id: number) => {
     axios
-      .delete(`/fiche-patients/${patientId}`)
+      .delete(`/groupes/${id}`)
       .then(() => {
-        message.success("Patient supprimé avec succès !");
+        message.success("Groupe supprimé avec succès !");
         loadData();
       })
       .catch((err) => {
         console.log(err);
         message.error(
-          "Une erreur s'est produite lors de la suppression du patient."
+          "Une erreur s'est produite lors de la suppression du groupe."
         );
       });
   };
-  
+
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await fetchPatients(
+      const result = await fetchGroupes(
         pagination.page,
         pagination.size,
         pagination.sort,
@@ -70,10 +71,12 @@ const PatientList: React.FC = () => {
     }
   }, [pagination]);
 
+  // Effet secondaire pour charger les données des patients lors du rendu initial
   useEffect(() => {
     loadData();
   }, [loadData]);
 
+  // Fonction pour gérer la recherche de patients par prénom
   const handleSearch = (value: string) => {
     setPagination((prev) => ({ ...prev, page: 0, filter: value }));
   };
@@ -89,72 +92,63 @@ const PatientList: React.FC = () => {
     }));
   };
 
+  // Définition des colonnes du tableau
   const columns = [
     {
-      title: "Prénom",
-      dataIndex: "prenom",
-      key: "prenom",
+      title: "libelle",
+      dataIndex: "libelle",
+      key: "libelle",
       sorter: true,
     },
     {
-      title: "Nom",
-      dataIndex: "nom",
-      key: "nom",
+      title: "description",
+      dataIndex: "description",
+      key: "description",
+      sorter: true,
+    },
+
+    {
+      title: "ninea",
+      dataIndex: "ninea",
+      key: "ninea",
       sorter: true,
     },
     {
-      title: "Adresse",
-      dataIndex: "adresse",
-      key: "adresse",
+      title: "codeMarchand",
+      dataIndex: "codeMarchand",
+      key: "codeMarchand",
       sorter: true,
     },
     {
-      title: "Age",
-      dataIndex: "age",
-      key: "age",
+      title: "rccm",
+      dataIndex: "rccm",
+      key: "rccm",
       sorter: true,
     },
     {
-      title: "Maladie",
-      dataIndex: "maladie",
-      key: "maladie",
-      sorter: true,
-    },
-    {
-      title: "Details",
-      dataIndex: "details",
-      key: "details",
-      sorter: true,
-    },
-    {
-      title: "Numéro-Téléphone",
+      title: "numeroTelephone",
       dataIndex: "numeroTelephone",
       key: "numeroTelephone",
       sorter: true,
     },
     {
-      title: "Numéro-Identification",
-      dataIndex: "numeroIdentification",
-      key: "numeroIdentification",
-      sorter: true,
-    },
-    {
-      title: "Type-Identification",
-      dataIndex: "typeIdentification",
-      key: "typeIdentification",
+      title: "typeGroupe",
+      dataIndex: "typeGroupe",
+      key: "typeGroupe",
       sorter: true,
     },
     {
       title: "Actions",
       key: "actions",
-      render: (text: any, record: DataPatient) => (
-        <Space size="small">
-          <Link to={`/addpatient/${record.id}`}>
+      // Définition des actions (boutons éditer et supprimer) dans la colonne "Actions"
+      render: (text: any, record: any) => (
+        <Space>
+         <Link to={`/addGroupe/${record.key}`}>
             <EditOutlined style={{ color: "#FF7900" }} />
           </Link>
           <Popconfirm
-            title="Êtes-vous sûr de vouloir supprimer ce patient ?"
-            onConfirm={() => handleDeletePatient (record.id)}
+            title="Êtes-vous sûr de vouloir supprimer ce groupe ?"
+            onConfirm={() => handleDeleteGroupe(record.key)}
             okText="Oui"
             cancelText="Non"
           >
@@ -163,35 +157,42 @@ const PatientList: React.FC = () => {
             </Button>
           </Popconfirm>
         </Space>
+         
+      
       ),
     },
+    
   ];
 
+  // Utilisation de useMemo pour optimiser le rendu du tableau en cas de changement de données filtrées
   const dataSource = useMemo(() => {
     return data?.map((item, index) => ({
-      id: item.id,
+      key: item.id,
       index: index + 1,
-      prenom: item.prenom,
-      nom: item.nom,
-      adresse: item.adresse,
-      age: item.age,
-      maladie: item.maladie,
-      details: item.details,
+      libelle: item.libelle,
+      description: item.description,
+      ninea: item.ninea,
+      codeMarchand: item.codeMarchand,
+      rccm: item.rccm,
       numeroTelephone: item.numeroTelephone,
-      numeroIdentification: item.numeroIdentification,
-      typeIdentification: item.typeIdentification,
+      typeGroupe: item.typeGroupe,
     }));
   }, [data]);
 
+  // Rendu du composant PatientList
   return (
     <>
       <div style={{ marginRight: "20px" }}>
-        <h1 className="text-3xl font-bold my-3">Patients</h1>
+        <h1 className="text-3xl font-bold my-3"> Groupes</h1>
+
+        {/* Barre d'outils avec des boutons Nouveau, Importer et Exporter */}
         <div className="flex justify-between gap-3">
           <Input
-            placeholder="Rechercher par prénom"
+            placeholder="Rechercher par libelle"
             suffix={<SearchOutlined />}
-            style={{ borderRadius: "0px" }}
+            style={{
+              borderRadius: "0px",
+            }}
             size={size}
             value={pagination.filter}
             className="flex-1"
@@ -199,22 +200,24 @@ const PatientList: React.FC = () => {
           />
           <div className="flex gap-2">
             <Button
-              className="text-white bg-black !rounded-none"
+              className="text-white bg-black !rounded-none "
               icon={<PlusOutlined />}
-              href="/addPatient"
+              href="/addgroupe"
               size={size}
             >
               Nouveau
             </Button>
           </div>
         </div>
+
+        {/* Affichage du tableau des groupes */}
         <div style={{ marginTop: "20px" }}>
           <Table
             loading={loading}
             scroll={{ x: "scroll" }}
             bordered
             onChange={handlePagination}
-            columns={columns as any}
+            columns={columns}
             dataSource={dataSource}
             pagination={{
               current: pagination.page + 1,
@@ -228,4 +231,4 @@ const PatientList: React.FC = () => {
   );
 };
 
-export default PatientList;
+export default GroupeList;

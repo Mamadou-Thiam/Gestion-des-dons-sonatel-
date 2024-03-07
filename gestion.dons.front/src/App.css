@@ -45,3 +45,13 @@ Button {
 }
 
 
+.custom-form .ant-form-item-label {
+  width: 154px;
+  overflow:hidden;
+  text-align: left !important;
+}
+
+
+Input{
+  border-radius: 0px;
+}

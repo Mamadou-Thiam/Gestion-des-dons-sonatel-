@@ -6,12 +6,15 @@ const baseUrl =
 export const fetchCampagnes= async (
   page: number,
   size: number,
+  sort:any,
   filter?: string | null
 ) => {
   try {
     const params = new URLSearchParams({
       page: String(page),
       size: String(size),
+      sort: `${sort.col},${sort.type}`,
+      
       ...buildParams(filter),
     });
     const response = await axios.get(`${baseUrl}/api/campagnes?${params}`);

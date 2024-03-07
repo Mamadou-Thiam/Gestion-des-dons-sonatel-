@@ -10,26 +10,38 @@ import {
 } from "@ant-design/icons";
 import { Routes, Route, Link } from "react-router-dom";
 import PatientList from "./pages/fiche-Patients/PatientList";
-import ThemeCampagne from "./pages/Theme-Campagnes/ThemeCampagne";
-import AddPatient from "./pages/fiche-Patients/AddPatient";
-import Groupe from "./pages/Groupes/Groupe";
+import Groupe from "./pages/Groupes/GroupeList";
 import Dashboard from "./pages/dashboard/Dashboard";
-import CategorieTheme from "./pages/Categories-Theme/CategorieTheme";
-import AddGroupe from "./pages/Groupes/AddGroupe";
-import Update from "./Actions/ThemeCampagne/Update";
-import UpdateCategorie from "./Actions/ThemeCategories/UpdateCategorie";
-import UpdateGroupe from "./Actions/Groupes/UpdateGroupe";
-import UpdatePatient from "./Actions/FichePatients/UpdatePatient";
 import "./App.css";
-import Campagne from "./pages/Campagnes/Campagne";
-import UpdateCampagne from "./Actions/Campagnes/UpdateCampagne";
-import AddCampagne from "./pages/Campagnes/AddCampagne";
+import Campagne from "./pages/Campagnes/CampagneList";
 import NotFound from "./pages/NotFound";
+import axios from "axios";
+import { API_URL, KEYCLOACK_URL } from "./core/Constants";
+import PatientForm from "./pages/fiche-Patients/PatientForm";
+import GroupeForm from "./pages/Groupes/GroupeForm";
+import CampagneForm from "./pages/Campagnes/CampagneForm";
+import { getKeycloakToken } from "./services/KeycloakService";
+import ThemeCampagneList from "./pages/Theme-Campagnes/ThemeCampagneList";
+import CategorieThemeList from "./pages/Categories-Theme/CategorieThemeList";
 
 const { Header, Content, Footer, Sider } = Layout;
 
 const App: React.FC = () => {
   const [collapsed, setCollapsed] = useState(false);
+
+  axios.defaults.baseURL = API_URL;
+
+  axios.interceptors.request.use(async (req) => {
+    console.log("Calling axios", req.url);
+    if (!req.url.startsWith("/tokens")) {
+      const token = await getKeycloakToken();
+      if (token) {
+        req.headers.Authorization = "Bearer " + token;
+      }
+    }
+
+    return req;
+  });
 
   const items = [
     {
@@ -112,8 +124,17 @@ const App: React.FC = () => {
             zIndex: 1,
           }}
         >
-          <div style={{ display: "flex", alignItems: "center" }}>
-            <h1 style={{ color: "white", margin: 0, marginLeft: "30px" }}>
+          <div style={{ display: "flex" }}>
+            <h1
+              className="text-3xl font-bold my-3,"
+              style={{
+                color: "white",
+                margin: 0,
+                marginLeft: "30px",
+                marginTop: "10px",
+                alignItems: "center",
+              }}
+            >
               Wesalo Back Office
             </h1>
           </div>
@@ -122,44 +143,35 @@ const App: React.FC = () => {
           style={{
             margin: "29px",
             padding: 24,
-            minHeight: 600,
+            minHeight: 800,
             backgroundColor: "white",
             overflow: "auto",
             marginTop: "50px",
           }}
         >
-          
           <Routes>
             <Route path="/" element={<Dashboard />} />
             <Route path="/patient" element={<PatientList />} />
-            <Route path="/themeCampagne" element={<ThemeCampagne />} />
+            <Route path="/themeCampagne" element={<ThemeCampagneList />} />
+            <Route path="/addTheme" element={<ThemeCampagneList />} />
             <Route path="/groupe" element={<Groupe />} />
-            <Route path="/addPatient" element={<AddPatient />} />
-            <Route path="/categorieTheme" element={<CategorieTheme />} />
-            <Route path="/addGroupe" element={<AddGroupe />} />
+            <Route path="/addPatient" element={<PatientForm />} />
+            <Route path="/addPatient/:id" element={<PatientForm />} />
+
+            <Route path="/categorieTheme" element={<CategorieThemeList />} />
+            <Route path="/addGroupe" element={<GroupeForm />} />
+            <Route path="addGroupe/:id" element={<GroupeForm />} />
             <Route path="/campagne" element={<Campagne />} />
-            <Route
-              path="/update/patient/:id"
-              element={<UpdatePatient />}
-            />
-            <Route
-              path="/update/themeCampagne/:id"
-              element={<Update />}
-            />
-            <Route
-              path="/update/themeCategorie/:id"
-              element={<UpdateCategorie />}
-            />
-            <Route path="/update/groupe/:id" element={<UpdateGroupe />} />
-            <Route path="/addCampagne" element={<AddCampagne />} />
-            <Route
-              path="/update/campagne/:id"
-              element={<UpdateCampagne />}
-            />
-            <Route path="*" element={<NotFound/>}/>
+            <Route path="/addTheme/:id" element={<ThemeCampagneList />} />
+            <Route path="/addCategorie" element={<CategorieThemeList />} />
+            <Route path="addCategorie/:id" element={<CategorieThemeList />} />
+
+            <Route path="/addCampagne" element={<CampagneForm />} />
+            <Route path="/addCampagne/:id" element={<CampagneForm />} />
+            <Route path="*" element={<NotFound />} />
           </Routes>
         </Content>
-        
+
         <Footer
           style={{
             textAlign: "center",

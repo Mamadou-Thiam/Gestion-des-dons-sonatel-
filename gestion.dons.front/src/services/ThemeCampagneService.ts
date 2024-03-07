@@ -6,13 +6,15 @@ const baseUrl =
 export const fetchThemeCampagnes = async (
   page: number,
   size: number,
+  sort:any,
   filter?: string | null
 ) => {
   try {
     const params = new URLSearchParams({
       page: String(page),
       size: String(size),
-      ...buildParams(filter),
+      sort: `${sort.col},${sort.type}`,
+      ...buildParams(filter)
     });
     const response = await axios.get(`${baseUrl}/api/theme-campagnes?${params}`);
     const total = response.headers["x-total-count"] || response.data.length;

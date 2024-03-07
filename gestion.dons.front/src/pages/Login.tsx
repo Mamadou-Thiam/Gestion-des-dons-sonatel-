@@ -1,78 +1,60 @@
-import React, { useState } from 'react';
-import { Form, Input, Button, Image } from 'antd';
+import React from 'react';
+import { Row, Col, Form, Input, Button } from 'antd';
+import { useNavigate } from 'react-router';
 
-import IbouSvg from '../assets/images/login/ibou-desktop.svg';
-import Logo from '../assets/images/logo-orange.png';
+interface LoginProps {
+  onLogin: () => void;
+}
 
+const Login: React.FC<LoginProps> = ({ onLogin }) => {
+  const navigate = useNavigate(); // Appel du hook useNavigate à l'intérieur du composant
 
-const Login: React.FC = ()=> {
- 
+  const onFinish = (values: any) => {
+    console.log('Received values:', values);
+    // Simuler une connexion réussie ici
+    onLogin();
+    navigate("/dashboard"); // Utilisation de navigate pour rediriger vers /dashboard
+  };
+
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
-      {/* Colonne gauche */}
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          justifyContent: 'center',
-          gap: '5rem',
-          padding: '2rem',
-          backgroundColor: '#333',
-        }}
-      >
-        <Image src={Logo} height={60} width={60} />
-        <Image src={IbouSvg} height={300} width={500} preview={false} />
-        <h1 className='text-white text-[40px] font-bold mt-5'>
-          Wesalo Backoffice
-        </h1>
-      </div>
-      
-      {/* Colonne droite */}
-      <div
-        style={{
-          padding: '2rem',
-          backgroundColor: '#f0f0f0',
-        }}
-      >
-        <h1 className='mb-10 text-[40px] font-bold'>Connexion</h1>
-        <Form
-          name='basic'
-          
-        >
-          <Form.Item
-            label='Login Windows'
-            name='username'
-            rules={[
-              {
-                required: true,
-                message: 'Please input your username!',
-              },
-            ]}
+    <Row justify="center" style={{ minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
+      <Col xs={24} sm={16} md={12} lg={10} xl={8}>
+        <div style={{ backgroundColor: 'black', height: '100%', padding: '2rem' }}>
+          <h2 style={{ color: 'white' }}>Welcome Back!</h2>
+          <p style={{ color: 'white' }}>Please login to your account.</p>
+        </div>
+      </Col>
+      <Col xs={24} sm={16} md={12} lg={14} xl={16}>
+        <div style={{ padding: '2rem', maxWidth: '400px', margin: '0 auto' }}>
+          <h2>Login</h2>
+          <Form
+            name="login-form"
+            initialValues={{ remember: false }}
+            onFinish={onFinish}
           >
-            <Input size='large' />
-          </Form.Item>
+            <Form.Item
+              name="username"
+              rules={[{ required: true, message: 'Please input your username!' }]}
+            >
+              <Input placeholder="Username" />
+            </Form.Item>
 
-          <Form.Item
-            label='Mot de passe'
-            name='password'
-            rules={[
-              {
-                required: true,
-                message: 'Please input your password!',
-              },
-            ]}
-          >
-            <Input.Password size='large' />
-          </Form.Item>
-          <Form.Item style={{ display: 'flex', justifyContent: 'center' }}>
-            <Button type="primary" htmlType="submit" >
-              Se connecter
-            </Button>
-          </Form.Item>
-        </Form>
-      </div>
-    </div>
+            <Form.Item
+              name="password"
+              rules={[{ required: true, message: 'Please input your password!' }]}
+            >
+              <Input.Password placeholder="Password" />
+            </Form.Item>
+
+            <Form.Item>
+              <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
+                Log in
+              </Button>
+            </Form.Item>
+          </Form>
+        </div>
+      </Col>
+    </Row>
   );
 };
 

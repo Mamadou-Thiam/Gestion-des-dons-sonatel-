@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { fetchPatients } from "../../services/PatientService";
 import {
   Table,
   Button,
@@ -17,12 +16,13 @@ import {
   PlusOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import { DataPatient } from "../../model/fiche-patient.model";
+import { DataCampagne } from "../../model/Campagne.model";
+import { fetchCampagnes } from "../../services/CampagneService";
 
 const size = "large";
 
-const PatientList: React.FC = () => {
-  const [data, setData] = useState<DataPatient[]>([]);
+const CampagneList: React.FC = () => {
+  const [data, setData] = useState<DataCampagne[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
 
@@ -33,26 +33,25 @@ const PatientList: React.FC = () => {
     filter: "",
   });
 
-  const handleDeletePatient = (id: string) => {
-    const patientId = parseInt(id, 10); 
+  const handleDeleteCampagne = (id: number) => {
     axios
-      .delete(`/fiche-patients/${patientId}`)
+      .delete(`/campagnes/${id}`)
       .then(() => {
-        message.success("Patient supprimé avec succès !");
+        message.success("Campagne supprimée avec succès !");
         loadData();
       })
       .catch((err) => {
         console.log(err);
         message.error(
-          "Une erreur s'est produite lors de la suppression du patient."
+          "Une erreur s'est produite lors de la suppression de la campagne."
         );
       });
   };
-  
+
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await fetchPatients(
+      const result = await fetchCampagnes(
         pagination.page,
         pagination.size,
         pagination.sort,
@@ -89,72 +88,94 @@ const PatientList: React.FC = () => {
     }));
   };
 
+  const handleConfirmDelete = (id: number) => {
+    handleDeleteCampagne(id);
+  };
+
+  const handleCancelDelete = () => {
+    message.info("Suppression annulée");
+  };
+
   const columns = [
     {
-      title: "Prénom",
-      dataIndex: "prenom",
-      key: "prenom",
+      title: "Reference",
+      dataIndex: "reference",
+      key: "reference",
       sorter: true,
     },
     {
-      title: "Nom",
-      dataIndex: "nom",
-      key: "nom",
+      title: "Libelle",
+      dataIndex: "libelle",
+      key: "libelle",
       sorter: true,
     },
     {
-      title: "Adresse",
-      dataIndex: "adresse",
-      key: "adresse",
+      title: "Description",
+      dataIndex: "description",
+      key: "description",
       sorter: true,
     },
     {
-      title: "Age",
-      dataIndex: "age",
-      key: "age",
+      title: "Banniere",
+      dataIndex: "banniere",
+      key: "banniere",
       sorter: true,
     },
     {
-      title: "Maladie",
-      dataIndex: "maladie",
-      key: "maladie",
+      title: "Date Debut",
+      dataIndex: "dateDebut",
+      key: "dateDebut",
       sorter: true,
     },
     {
-      title: "Details",
-      dataIndex: "details",
-      key: "details",
+      title: "Date Fin",
+      dataIndex: "dateFin",
+      key: "dateFin",
       sorter: true,
     },
     {
-      title: "Numéro-Téléphone",
-      dataIndex: "numeroTelephone",
-      key: "numeroTelephone",
+      title: "Montant Cible",
+      dataIndex: "montantCible",
+      key: "montantCible",
       sorter: true,
     },
     {
-      title: "Numéro-Identification",
-      dataIndex: "numeroIdentification",
-      key: "numeroIdentification",
+      title: "Montant Actuel",
+      dataIndex: "montantActuel",
+      key: "montantActuel",
       sorter: true,
     },
     {
-      title: "Type-Identification",
-      dataIndex: "typeIdentification",
-      key: "typeIdentification",
+      title: "Nombre Don",
+      dataIndex: "nombreDon",
+      key: "nombreDon",
+      sort: true,
+      sorter: true,
+    },
+    {
+      title: "Montant Don Fixe",
+      dataIndex: "montantDonFixe",
+      key: "montantDonFixe",
+      sorter: true,
+    },
+    {
+      title: "Montant Kit",
+      dataIndex: "montantKit",
+      key: "montantKit",
       sorter: true,
     },
     {
       title: "Actions",
       key: "actions",
-      render: (text: any, record: DataPatient) => (
+      render: (text: any, record: any) => (
         <Space size="small">
-          <Link to={`/addpatient/${record.id}`}>
+          <Link to={`/addCampagne/${record.key}`}>
             <EditOutlined style={{ color: "#FF7900" }} />
           </Link>
           <Popconfirm
-            title="Êtes-vous sûr de vouloir supprimer ce patient ?"
-            onConfirm={() => handleDeletePatient (record.id)}
+            title="Voulez-vous vraiment supprimer cette campagne ?"
+            onConfirm={() => handleConfirmDelete(record.key)}
+            onCancel={handleCancelDelete}
             okText="Oui"
             cancelText="Non"
           >
@@ -169,29 +190,33 @@ const PatientList: React.FC = () => {
 
   const dataSource = useMemo(() => {
     return data?.map((item, index) => ({
-      id: item.id,
+      key: item.id,
       index: index + 1,
-      prenom: item.prenom,
-      nom: item.nom,
-      adresse: item.adresse,
-      age: item.age,
-      maladie: item.maladie,
-      details: item.details,
-      numeroTelephone: item.numeroTelephone,
-      numeroIdentification: item.numeroIdentification,
-      typeIdentification: item.typeIdentification,
+      reference: item.reference,
+      libelle: item.libelle,
+      description: item.description,
+      banniere: item.banniere,
+      dateDebut: item.dateDebut,
+      dateFin: item.dateFin,
+      montantCible: item.montantCible,
+      montantActuel: item.montantActuel,
+      nombreDon: item.nombreDon,
+      montantDonFixe: item.montantDonFixe,
+      montantKit: item.montantKit,
     }));
   }, [data]);
 
   return (
     <>
       <div style={{ marginRight: "20px" }}>
-        <h1 className="text-3xl font-bold my-3">Patients</h1>
+        <h1 className="text-3xl font-bold my-3"> Campagnes</h1>
         <div className="flex justify-between gap-3">
           <Input
-            placeholder="Rechercher par prénom"
+            placeholder="Rechercher par libellé"
             suffix={<SearchOutlined />}
-            style={{ borderRadius: "0px" }}
+            style={{
+              borderRadius: "0px",
+            }}
             size={size}
             value={pagination.filter}
             className="flex-1"
@@ -199,9 +224,9 @@ const PatientList: React.FC = () => {
           />
           <div className="flex gap-2">
             <Button
-              className="text-white bg-black !rounded-none"
+              className="text-white bg-black !rounded-none "
               icon={<PlusOutlined />}
-              href="/addPatient"
+              href="/addCampagne"
               size={size}
             >
               Nouveau
@@ -214,7 +239,7 @@ const PatientList: React.FC = () => {
             scroll={{ x: "scroll" }}
             bordered
             onChange={handlePagination}
-            columns={columns as any}
+            columns={columns}
             dataSource={dataSource}
             pagination={{
               current: pagination.page + 1,
@@ -228,4 +253,4 @@ const PatientList: React.FC = () => {
   );
 };
 
-export default PatientList;
+export default CampagneList;
