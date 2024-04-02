@@ -18,9 +18,12 @@ import {
   EditOutlined,
   PlusOutlined,
   SearchOutlined,
+  DownOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import { DataCategorieTheme } from "../../model/categorie-theme.model";
 import { fetchThemeCategorie } from "../../services/CategorieThemeService";
+import { exportToExcel } from "../../services/exportToExcel";
 
 const size = "large";
 
@@ -140,6 +143,18 @@ const CategorieThemeList: React.FC = () => {
       sorter: true,
     },
     {
+      title: "Date Création",
+      dataIndex: "dateCreation",
+      key: "dateCreation",
+      sorter: true,
+    },
+    {
+      title: "Date Modification",
+      dataIndex: "dateModification",
+      key: "dateModification",
+      sorter: true,
+    },
+    {
       title: "Actions",
       key: "actions",
       render: (text: any, record: DataCategorieTheme) => (
@@ -152,6 +167,10 @@ const CategorieThemeList: React.FC = () => {
             onConfirm={() => handleDeleteCategorie(Number(record.id))}
             okText="Oui"
             cancelText="Non"
+            okButtonProps={{ style: { color: "white", background: "#66BB6A" } }}
+            cancelButtonProps={{
+              style: { color: "white", background: "#FF7900" },
+            }}
           >
             <Button type="link" style={{ color: "red" }}>
               <DeleteOutlined />
@@ -168,6 +187,8 @@ const CategorieThemeList: React.FC = () => {
       index: index + 1,
       libelle: item.libelle,
       description: item.description,
+      dateCreation:item.dateCreation,
+      dateModification:item.dateModification,
       id: item.id,
       supprime: item.supprime,
     }));
@@ -176,7 +197,7 @@ const CategorieThemeList: React.FC = () => {
   return (
     <>
       <div style={{ marginRight: "20px" }}>
-        <h1 className="text-3xl font-bold my-3">Catégories Themes</h1>
+        <h1 className="text-3xl font-bold my-3">Catégorie Thèmes</h1>
         <div className="flex justify-between gap-3">
           <Input
             placeholder="Rechercher par libellé"
@@ -189,16 +210,35 @@ const CategorieThemeList: React.FC = () => {
           />
           <div className="flex gap-2">
             <Button
-              className="text-white bg-black !rounded-none "
+              style={{
+                background: "black",
+                color: "white",
+                margin: "0 10px",
+                borderRadius: "0px",
+              }}
               icon={<PlusOutlined />}
               onClick={() => {
-                setCategorie(undefined);
+                // setTheme(undefined);
                 setVisible(true);
               }}
               size={size}
             >
               Nouveau
             </Button>
+            <Button
+              style={{
+                background: "#FF7900",
+                color: "white",
+                margin: "0 10px",
+                borderRadius: "0px",
+              }}
+              icon={<DownOutlined />}
+              size={size}
+              onClick={() => exportToExcel(dataSource)}
+            >
+              Exporter
+            </Button>
+            
           </div>
         </div>
         <div style={{ marginTop: "20px" }}>
@@ -225,7 +265,6 @@ const CategorieThemeList: React.FC = () => {
           width={700}
         >
           <Form
-            
             layout="vertical"
             onFinish={handleSaveCategorie}
             initialValues={categorie}
@@ -242,7 +281,10 @@ const CategorieThemeList: React.FC = () => {
             <Form.Item label="Description" name="description">
               <Input.TextArea />
             </Form.Item>
-            <div style={{ alignItems: "center", marginLeft: "220px" }}>
+            <div
+              className="flex  gap-3"
+              style={{ alignItems: "center", marginLeft: "220px" }}
+            >
               <Button
                 style={{
                   background: "#FF7900",

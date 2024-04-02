@@ -1,0 +1,291 @@
+$orange: #fb7900;
+$red: rgb(195, 47, 47);
+$green: rgb(61, 135, 123);
+
+.button-orange {
+  background-color: $orange;
+  border: 1px solid;
+  border-color: $orange;
+  color: white;
+  text-transform: uppercase;
+  padding: 10px 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+
+  &:hover,
+  &:focus-within {
+    background-color: white;
+    color: $orange;
+    border-color: $orange;
+  }
+  white-space: nowrap;
+}
+
+.button-green {
+  background-color: $green;
+  border: 1px solid;
+  border-color: $green;
+  color: white;
+  text-transform: uppercase;
+  padding: 10px 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+
+  &:hover,
+  &:focus-within {
+    background-color: white;
+    color: $green;
+    border-color: $green;
+  }
+  white-space: nowrap;
+}
+
+.black-button {
+  background-color: black;
+  border: 1px solid;
+  border-color: black;
+  color: white;
+  text-transform: uppercase;
+  padding: 10px 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+
+  &:hover,
+  &:focus-within {
+    background-color: white;
+    color: black;
+    border-color: black;
+  }
+  white-space: nowrap;
+}
+
+.white-button {
+  background-color: white;
+  border: 1px solid;
+  border-color: black;
+  color: black;
+  text-transform: uppercase;
+  padding: 10px 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+
+  &:hover,
+  &:focus-within {
+    background-color: black;
+    color: white;
+    border-color: white;
+  }
+  white-space: nowrap;
+}
+
+.red-button {
+  background-color: $red;
+  border: 1px solid;
+  border-color: $red;
+  color: white;
+  text-transform: uppercase;
+  padding: 10px 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+
+  &:hover,
+  &:focus-within {
+    background-color: white;
+    color: $red;
+    border-color: $red;
+  }
+}
+
+.cancel-button {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  text-transform: uppercase;
+  padding: 10px 40px;
+  border: 1px solid #d9d9d9;
+  background-color: transparent;
+
+  &:hover,
+  &:focus-within {
+    border-color: black;
+  }
+}
+
+.text-orange {
+  color: $orange;
+}
+
+.bg-orange {
+  background-color: $orange;
+}
+
+label.form-control-addon-within {
+  border-radius: 0px;
+  border: 1px solid #000;
+}
+
+.search-field {
+  input {
+    height: 44px;
+  }
+}
+
+.ant-menu-item-selected {
+  background-color: $orange !important;
+}
+
+.ant-input-focused,
+.ant-input:focus,
+.ant-input-affix-wrapper-focused,
+.ant-input-affix-wrapper:focus {
+  border-color: #fb790096;
+  box-shadow: 0 0 0 2px rgba(237, 170, 103, 0.2);
+}
+
+.ant-input:hover {
+  border-color: #fb790096;
+}
+
+.ant-input-affix-wrapper:not(.ant-input-affix-wrapper-disabled):hover {
+  border-color: #fb790096;
+}
+
+.records-searchbox {
+  background-color: #f0f2f5;
+  padding: 20px;
+  margin-bottom: 10px;
+}
+
+.table-custom {
+  table {
+    width: '1OO%';
+  }
+  tbody tr {
+    cursor: pointer;
+  }
+}
+
+.ant-layout-sider-children {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.logout {
+  padding: 16px;
+  width: 100%;
+  background: rgba(255, 255, 255, 0.3);
+  display: flex;
+  align-items: center;
+  color: white;
+  justify-content: center;
+  &:hover {
+    color: $orange;
+    background-color: black;
+  }
+}
+
+.search-label {
+  margin: 0;
+  width: 110px;
+  min-width: 110px;
+}
+
+.login-form {
+  label {
+    min-width: 130px;
+  }
+}
+
+.ant-switch-checked {
+  background-color: $orange;
+}
+
+.d-form {
+  .ant-col {
+    label {
+      width: 200px;
+      display: inline-block;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      text-align: left;
+    }
+  }
+}
+
+.logout-button:focus,
+.logout-button:hover,
+.logout-button:active {
+  color: $orange;
+  border-color: $orange;
+  background: #fff;
+}
+
+.user-header {
+  color: $orange;
+}
+
+.ant-table-tbody > tr > td {
+  word-wrap: break-word;
+  min-width: 100px;
+}
+
+.col-min {
+  min-width: 150px;
+}
+
+.ant-table-row {
+  &:hover {
+    background-color: #f9dbc03a !important;
+    .ant-table-cell {
+      background-color: #f9dbc03a !important;
+    }
+  }
+}
+
+.import-report {
+  max-height: 80vh;
+}
+
+.customListForm {
+  .plus-button {
+    background-color: $green;
+    color: #d9d9d9;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+.add-field-button {
+  background-color: $green;
+  border: 1px solid;
+  border-color: $green;
+  color: white;
+  text-transform: uppercase;
+  padding: 5px 20px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+
+  &:hover,
+  &:focus-within {
+    background-color: white;
+    color: $green;
+    border-color: $green;
+  }
+  white-space: nowrap;
+}

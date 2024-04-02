@@ -55,3 +55,38 @@ Button {
 Input{
   border-radius: 0px;
 }
+
+.customButton{
+  
+    background: #FF7900;
+    color: #ffffff;
+    margin-left: 550%;
+    
+  
+}
+.customButton:hover{
+  color: #FF7900;
+
+}
+
+.ant-switch {
+  background-color: rgba(128, 128, 128, 0.821);
+}
+
+.blue-circle {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  border-radius: 50%;
+  margin-left: 5px;
+  background-color: blue;
+}
+
+.red-circle {
+  width: 10px;
+  height: 10px;
+  display: inline-block;
+  border-radius: 50%;
+  margin-left: 5px;
+  background-color: red;
+}

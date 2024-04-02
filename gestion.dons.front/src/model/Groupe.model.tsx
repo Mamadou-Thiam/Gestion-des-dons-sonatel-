@@ -9,6 +9,8 @@ interface DataGroupe {
   typeGroupe: string;
   tag: string;
   logo: string;
+  dateCreation:string;
+  dateModification:string;
   supprime: boolean;
 }
 

@@ -3,7 +3,6 @@ import {
   Table,
   Button,
   Input,
-  Space,
   TablePaginationConfig,
   message,
   Modal,
@@ -18,9 +17,12 @@ import {
   EditOutlined,
   PlusOutlined,
   SearchOutlined,
+  DownOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import DataThemeCampagne from "../../model/theme-campagne.model";
 import { fetchThemeCampagnes } from "../../services/ThemeCampagneService";
+import { exportToExcel } from "../../services/exportToExcel";
 
 const size = "large";
 
@@ -140,10 +142,22 @@ const ThemeCampagneList: React.FC = () => {
       sorter: true,
     },
     {
+      title: "Date Création",
+      dataIndex: "dateCreation",
+      key: "dateModification",
+      sorter: true,
+    },
+    {
+      title: "Date Modification",
+      dataIndex: "dateModification",
+      key: "dateModification",
+      sorter: true,
+    },
+    {
       title: "Actions",
       key: "actions",
       render: (text: any, record: DataThemeCampagne) => (
-        <Space size="small">
+        <div className="flex gap-2 my-3">
           <Button type="link" onClick={() => handleEditTheme(record)}>
             <EditOutlined style={{ color: "#FF7900" }} />
           </Button>
@@ -152,12 +166,16 @@ const ThemeCampagneList: React.FC = () => {
             onConfirm={() => handleDeleteTheme(Number(record.id))}
             okText="Oui"
             cancelText="Non"
+            okButtonProps={{ style: { color: "white", background: "#66BB6A" } }}
+            cancelButtonProps={{
+              style: { color: "white", background: "#FF7900" },
+            }}
           >
             <Button type="link" style={{ color: "red" }}>
               <DeleteOutlined />
             </Button>
           </Popconfirm>
-        </Space>
+        </div>
       ),
     },
   ];
@@ -169,6 +187,8 @@ const ThemeCampagneList: React.FC = () => {
       libelle: item.libelle,
       description: item.description,
       id: item.id,
+      dateCreation:item.dateCreation,
+      dateModification:item.dateModification,
       supprime: item.supprime,
     }));
   }, [data]);
@@ -188,7 +208,7 @@ const ThemeCampagneList: React.FC = () => {
             onChange={(e) => handleSearch(e.target.value)}
           />
           <div className="flex gap-2">
-            <Button
+            {/* <Button
               className="text-white bg-black !rounded-none "
               icon={<PlusOutlined />}
               onClick={() => {
@@ -198,7 +218,37 @@ const ThemeCampagneList: React.FC = () => {
               size={size}
             >
               Nouveau
+            </Button> */}
+            <Button
+              style={{
+                background: "black",
+                color: "white",
+                margin: "0 10px",
+                borderRadius: "0px",
+              }}
+              icon={<PlusOutlined />}
+              onClick={() => {
+                // setTheme(undefined);
+                setVisible(true);
+              }}
+              size={size}
+            >
+              Nouveau
             </Button>
+            <Button
+              style={{
+                background: "#FF7900",
+                color: "white",
+                margin: "0 10px",
+                borderRadius: "0px",
+              }}
+              icon={<DownOutlined />}
+              size={size}
+              onClick={() => exportToExcel(dataSource)}
+            >
+              Exporter
+            </Button>
+            
           </div>
         </div>
         <div style={{ marginTop: "20px" }}>
@@ -225,7 +275,6 @@ const ThemeCampagneList: React.FC = () => {
           width={700}
         >
           <Form
-          
             layout="vertical"
             onFinish={handleSaveTheme}
             initialValues={theme}
@@ -237,12 +286,15 @@ const ThemeCampagneList: React.FC = () => {
                 { required: true, message: "Veuillez entrer le libellé" },
               ]}
             >
-              <Input   style={{ borderRadius: 0 }}/>
+              <Input style={{ borderRadius: 0 }} />
             </Form.Item>
             <Form.Item label="Description" name="description">
               <Input.TextArea />
             </Form.Item>
-            <div style={{ alignItems: "center", marginLeft: "220px" }}>
+            <div
+              className="flex  gap-3"
+              style={{ alignItems: "center", marginLeft: "220px" }}
+            >
               <Button
                 style={{
                   background: "#FF7900",

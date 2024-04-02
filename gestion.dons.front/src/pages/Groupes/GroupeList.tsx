@@ -1,4 +1,5 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import {
   Table,
   Button,
@@ -8,21 +9,24 @@ import {
   message,
   Popconfirm,
 } from "antd";
-import { Link } from "react-router-dom";
 import axios from "axios";
 import {
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
   SearchOutlined,
+  DownOutlined,
+  UploadOutlined,
 } from "@ant-design/icons";
 import DataGroupe from "../../model/Groupe.model";
 import { fetchGroupes } from "../../services/GroupeService";
+import { exportToExcel } from "../../services/exportToExcel";
 
 const size = "large";
 
 const GroupeList: React.FC = () => {
-  // Déclaration des états du composant
+  const navigate = useNavigate();
+
   const [data, setData] = useState<DataGroupe[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
@@ -34,7 +38,6 @@ const GroupeList: React.FC = () => {
     filter: "",
   });
 
-  // Fonction pour supprimer un patient en fonction de son ID
   const handleDeleteGroupe = (id: number) => {
     axios
       .delete(`/groupes/${id}`)
@@ -71,12 +74,10 @@ const GroupeList: React.FC = () => {
     }
   }, [pagination]);
 
-  // Effet secondaire pour charger les données des patients lors du rendu initial
   useEffect(() => {
     loadData();
   }, [loadData]);
 
-  // Fonction pour gérer la recherche de patients par prénom
   const handleSearch = (value: string) => {
     setPagination((prev) => ({ ...prev, page: 0, filter: value }));
   };
@@ -92,18 +93,19 @@ const GroupeList: React.FC = () => {
     }));
   };
 
-  // Définition des colonnes du tableau
   const columns = [
     {
       title: "libelle",
       dataIndex: "libelle",
       key: "libelle",
+      width:150,
       sorter: true,
     },
     {
       title: "description",
       dataIndex: "description",
       key: "description",
+      width: 150,
       sorter: true,
     },
 
@@ -111,60 +113,103 @@ const GroupeList: React.FC = () => {
       title: "ninea",
       dataIndex: "ninea",
       key: "ninea",
+      width: 150,
       sorter: true,
     },
     {
       title: "codeMarchand",
       dataIndex: "codeMarchand",
       key: "codeMarchand",
+      width: 150,
       sorter: true,
+
     },
     {
       title: "rccm",
       dataIndex: "rccm",
       key: "rccm",
+      width: 150,
+      sorter: true,
+    },
+    {
+      title: "Tag",
+      dataIndex: "tag",
+      key: "tag",
+      width: 150,
+      sorter: true,
+    },
+    {
+      title: "Logo",
+      dataIndex: "logo",
+      key: "logo",
+      width: 150,
       sorter: true,
     },
     {
       title: "numeroTelephone",
       dataIndex: "numeroTelephone",
       key: "numeroTelephone",
+      width: 150,
       sorter: true,
     },
     {
       title: "typeGroupe",
       dataIndex: "typeGroupe",
       key: "typeGroupe",
+      width: 150,
+      sorter: true,
+    },
+    {
+      title: "Date Création",
+      dataIndex: "dateCreation",
+      key: "dateCreation",
+      width: 150,
+      sorter: true,
+    },
+    {
+      title: "Date Modification",
+      dataIndex: "dateModification",
+      key: "dateModification",
+      width: 150,
       sorter: true,
     },
     {
       title: "Actions",
       key: "actions",
-      // Définition des actions (boutons éditer et supprimer) dans la colonne "Actions"
+      fixed: "right",
+      width: 150,
       render: (text: any, record: any) => (
         <Space>
-         <Link to={`/addGroupe/${record.key}`}>
-            <EditOutlined style={{ color: "#FF7900" }} />
+          <Link to={`/addGroupe/${record.key}`}>
+            <Button
+              type="link"
+              style={{ color: "#FF7900" }}
+              size={size}
+              icon={<EditOutlined />}
+            />
           </Link>
           <Popconfirm
             title="Êtes-vous sûr de vouloir supprimer ce groupe ?"
             onConfirm={() => handleDeleteGroupe(record.key)}
             okText="Oui"
             cancelText="Non"
+            okButtonProps={{ style: { color: "white", background: "#66BB6A" } }}
+            cancelButtonProps={{
+              style: { color: "white", background: "#FF7900" },
+            }}
           >
-            <Button type="link" style={{ color: "red" }}>
-              <DeleteOutlined />
-            </Button>
+            <Button
+              type="link"
+              style={{ color: "red" }}
+              size={size}
+              icon={<DeleteOutlined />}
+            />
           </Popconfirm>
         </Space>
-         
-      
       ),
     },
-    
   ];
 
-  // Utilisation de useMemo pour optimiser le rendu du tableau en cas de changement de données filtrées
   const dataSource = useMemo(() => {
     return data?.map((item, index) => ({
       key: item.id,
@@ -175,17 +220,22 @@ const GroupeList: React.FC = () => {
       codeMarchand: item.codeMarchand,
       rccm: item.rccm,
       numeroTelephone: item.numeroTelephone,
+      logo: item.logo,
+      tag: item.tag,
+      dateCreation: item.dateCreation,
+      dateModification: item.dateModification,
       typeGroupe: item.typeGroupe,
     }));
   }, [data]);
 
-  // Rendu du composant PatientList
+  const handleAddGroupe = () => {
+    navigate("/addgroupe");
+  };
+
   return (
     <>
       <div style={{ marginRight: "20px" }}>
         <h1 className="text-3xl font-bold my-3"> Groupes</h1>
-
-        {/* Barre d'outils avec des boutons Nouveau, Importer et Exporter */}
         <div className="flex justify-between gap-3">
           <Input
             placeholder="Rechercher par libelle"
@@ -200,24 +250,40 @@ const GroupeList: React.FC = () => {
           />
           <div className="flex gap-2">
             <Button
-              className="text-white bg-black !rounded-none "
+              style={{
+                background: "black",
+                color: "white",
+                margin: "0 10px",
+                borderRadius: "0px",
+              }}
               icon={<PlusOutlined />}
-              href="/addgroupe"
               size={size}
+              onClick={handleAddGroupe}
             >
               Nouveau
             </Button>
+            <Button
+              style={{
+                background: "#FF7900",
+                color: "white",
+                margin: "0 10px",
+                borderRadius: "0px",
+              }}
+              icon={<DownOutlined />}
+              size={size}
+              onClick={() => exportToExcel(dataSource)}
+            >
+              Exporter
+            </Button>
           </div>
         </div>
-
-        {/* Affichage du tableau des groupes */}
         <div style={{ marginTop: "20px" }}>
           <Table
             loading={loading}
             scroll={{ x: "scroll" }}
             bordered
             onChange={handlePagination}
-            columns={columns}
+            columns={columns as any}
             dataSource={dataSource}
             pagination={{
               current: pagination.page + 1,

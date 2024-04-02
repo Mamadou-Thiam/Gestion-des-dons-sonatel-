@@ -17,40 +17,13 @@ const PatientForm: React.FC = () => {
   const handleCancel = () => {
     navigate("/patient");
   };
-
   useEffect(() => {
     if (id) {
       axios
         .get(`/fiche-patients/${id}`)
         .then((res) => {
-          setPatient({
-            id: res.data.id,
-            nom: res.data.nom,
-            prenom: res.data.prenom,
-            age: res.data.age,
-            adresse: res.data.adresse,
-            maladie: res.data.maladie,
-            details: res.data.details,
-            supprime: res.data.supprime,
-            numeroTelephone: res.data.numeroTelephone,
-            numeroIdentification: res.data.numeroIdentification,
-            typeIdentification: res.data.typeIdentification,
-            dateCreation: res.data.dateCreation,
-            dateModification: res.data.dateModification,
-          });
-          form.setFieldsValue({
-            nom: res.data.nom,
-            prenom: res.data.prenom,
-            age: res.data.age,
-            adresse: res.data.adresse,
-            maladie: res.data.maladie,
-            details: res.data.details,
-            numeroTelephone: res.data.numeroTelephone,
-            numeroIdentification: res.data.numeroIdentification,
-            typeIdentification: res.data.typeIdentification,
-            dateCreation: res.data.dateCreation,
-            dateModification: res.data.dateModification,
-          });
+          setPatient(res.data);
+          form.setFieldsValue(res.data);
         })
         .catch((err) => {
           console.log("Error from Update");
@@ -90,7 +63,7 @@ const PatientForm: React.FC = () => {
       </h1>
 
       <Form
-        style={{ marginTop: "50px", marginLeft: "70px" }}
+        style={{ marginTop: "50px" }}
         form={form}
         layout="horizontal"
         size="large"
@@ -167,34 +140,26 @@ const PatientForm: React.FC = () => {
           </Form.Item>
         </div>
 
-        <div
-          style={{ display: "flex", marginLeft: "500px", marginTop: "20px" }}
-        >
-          <div>
+        <div className="flex items-center justify-center mt-20">
+          <div className="w-full">
             <Button
-              style={{
-                background: "#FF7900",
-                color: "white",
-                borderRadius: "0px",
-              }}
-              icon={<CloseOutlined />}
-              size="large"
+              className="bg-orange-500 text-white rounded-0 border-none w-full"
               onClick={handleCancel}
             >
+              <span className="mr-2">
+                <CloseOutlined />
+              </span>
               Annuler
             </Button>
           </div>
-          <div style={{ margin: "0 10px" }}>
+          <div className="w-full mx-10 ">
             <Button
-              style={{
-                background: "black",
-                color: "white",
-                borderRadius: "0px",
-              }}
+              className="bg-black text-white rounded-0 border-none w-full"
               htmlType="submit"
-              icon={<SaveOutlined />}
-              size="large"
             >
+              <span className="mr-2">
+                <SaveOutlined />
+              </span>
               Enregistrer
             </Button>
           </div>

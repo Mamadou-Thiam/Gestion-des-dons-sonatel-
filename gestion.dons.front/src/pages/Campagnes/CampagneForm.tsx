@@ -1,10 +1,9 @@
 import React, { useEffect, useState } from "react";
-import { Button, Form, Input, message, Select } from "antd";
+import { Button, DatePicker, Form, Input, message, Select } from "antd";
 import axios from "axios";
 import { CloseOutlined, SaveOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router";
 import { DataCampagne } from "../../model/Campagne.model";
-const { Option } = Select;
 
 const CampagneForm: React.FC = () => {
   const [form] = Form.useForm();
@@ -13,7 +12,6 @@ const CampagneForm: React.FC = () => {
   const [selectedGroupId, setSelectedGroupId] = useState(null);
   const [themes, setThemes] = useState([]);
   const [selectedThemeId, setSelectedThemeId] = useState(null);
-
   const [campagne, setCampagne] = useState<DataCampagne>({
     id: "",
     libelle: "",
@@ -21,14 +19,18 @@ const CampagneForm: React.FC = () => {
     description: "",
     dateDebut: "",
     dateFin: "",
+    
     montantCible: "",
     montantActuel: "",
     montantKit: "",
     montantDonFixe: "",
-    nombreDon: "",
+    nombreDon: 0,
     banniere: "",
-    groupe: { id: selectedGroupId },
-    theme: { id: selectedThemeId },
+    dateCreation: "",
+    dateModification: "",
+    groupe: { id: "" },
+    theme: { id: "" },
+    active: false,
     supprime: false,
   });
 
@@ -40,7 +42,7 @@ const CampagneForm: React.FC = () => {
   useEffect(() => {
     // Fetch groups
     axios
-      .get(`/groupes`)
+      .get(`/groupes/all?supprime.equals=false`)
       .then((res) => {
         setGroups(res.data);
       })
@@ -50,7 +52,7 @@ const CampagneForm: React.FC = () => {
 
     // Fetch themes
     axios
-      .get(`/theme-campagnes`)
+      .get(`/theme-campagnes/all?supprime.equals=false`)
       .then((res) => {
         setThemes(res.data);
       })
@@ -64,6 +66,8 @@ const CampagneForm: React.FC = () => {
         .then((res) => {
           setCampagne(res.data);
           form.setFieldsValue(res.data);
+          setSelectedGroupId(res.data.groupe.id);
+          setSelectedThemeId(res.data.theme.id);
         })
         .catch((err) => {
           console.log("Error from Update");
@@ -73,13 +77,15 @@ const CampagneForm: React.FC = () => {
 
   const handleSaveGroupe = async (values) => {
     const data = {
-      id: campagne?.id,
       ...campagne,
       ...values,
+      groupe: { id: selectedGroupId },
+      theme: { id: selectedThemeId },
+      nombreDon: campagne?.nombreDon || 0,
     };
 
-    const promise = campagne
-      ? axios.put(`/campagnes/${id}`, data)
+    const promise = campagne.id
+      ? axios.put(`/campagnes/${campagne.id}`, data)
       : axios.post("/campagnes", data);
 
     promise
@@ -103,7 +109,7 @@ const CampagneForm: React.FC = () => {
       </h1>
 
       <Form
-        style={{ marginTop: "50px", marginLeft: "70px" }}
+        style={{ marginTop: "50px" }}
         form={form}
         layout="horizontal"
         size="large"
@@ -129,10 +135,6 @@ const CampagneForm: React.FC = () => {
             <Input.TextArea style={{ borderRadius: 0 }} />
           </Form.Item>
 
-          <Form.Item label="Référence" name="reference">
-            <Input style={{ borderRadius: 0 }} />
-          </Form.Item>
-
           <Form.Item label="Date de début" name="dateDebut">
             <Input type="date" style={{ borderRadius: 0 }} />
           </Form.Item>
@@ -141,24 +143,32 @@ const CampagneForm: React.FC = () => {
             <Input type="date" style={{ borderRadius: 0 }} />
           </Form.Item>
 
+          {/* <Form.Item label="Date de Création" name="dateCreation">
+            <Input type="date" style={{ borderRadius: 0 }} />
+          </Form.Item>
+
+          <Form.Item label="Date de Modification" name="dateModification">
+            <Input type="date"  style={{ borderRadius: 0 }} />
+          </Form.Item> */}
+
           <Form.Item label="Montant cible" name="montantCible">
-            <Input style={{ borderRadius: 0 }} />
+            <Input type="Number" style={{ borderRadius: 0 }} />
           </Form.Item>
 
           <Form.Item label="Montant actuel" name="montantActuel">
-            <Input style={{ borderRadius: 0 }} />
+            <Input type="Number" style={{ borderRadius: 0 }} />
           </Form.Item>
 
           <Form.Item label="Montant kit" name="montantKit">
-            <Input style={{ borderRadius: 0 }} />
+            <Input type="Number" style={{ borderRadius: 0 }} />
           </Form.Item>
 
           <Form.Item label="Montant don fixe" name="montantDonFixe">
-            <Input style={{ borderRadius: 0 }} />
+            <Input type="Number" style={{ borderRadius: 0 }} />
           </Form.Item>
 
           <Form.Item label="Nombre don" name="nombreDon">
-            <Input style={{ borderRadius: 0 }} />
+            <Input type="number" style={{ borderRadius: 0 }} readOnly />
           </Form.Item>
 
           <Form.Item label="Bannière" name="banniere">
@@ -189,34 +199,26 @@ const CampagneForm: React.FC = () => {
           </Form.Item>
         </div>
 
-        <div
-          style={{ display: "flex", marginLeft: "500px", marginTop: "20px" }}
-        >
-          <div>
+        <div className="flex items-center ml-500 mt-20 ">
+          <div className="w-full">
             <Button
-              style={{
-                background: "#FF7900",
-                color: "white",
-                borderRadius: "0px",
-              }}
-              icon={<CloseOutlined />}
-              size="large"
+              className="bg-orange-500 text-white rounded-0 w-full border-transparent"
               onClick={handleCancel}
             >
+              <span className="mr-2">
+                <CloseOutlined />
+              </span>
               Annuler
             </Button>
           </div>
-          <div style={{ margin: "0 10px" }}>
+          <div className="w-full mx-10">
             <Button
-              style={{
-                background: "black",
-                color: "white",
-                borderRadius: "0px",
-              }}
+              className="bg-black text-white rounded-0 w-full"
               htmlType="submit"
-              icon={<SaveOutlined />}
-              size="large"
             >
+              <span className="mr-2">
+                <SaveOutlined />
+              </span>
               Enregistrer
             </Button>
           </div>

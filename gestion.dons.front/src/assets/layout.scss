@@ -1,0 +1,65 @@
+$orange: #fb7900;
+
+.ant-layout {
+  width: 100%;
+}
+
+.ant-layout-sider-children {
+  .logo {
+    padding: 16px;
+    background: rgba(255, 255, 255, 0.3);
+  }
+}
+
+.site-layout {
+  padding-left: 224px;
+  width: 100%;
+  min-height: 100vh;
+  position: relative;
+  .trigger {
+    padding: 0 24px;
+    font-size: 18px;
+    line-height: 64px;
+    cursor: pointer;
+    transition: color 0.3s;
+
+    &:hover {
+      color: #1890ff;
+    }
+  }
+
+  .site-layout-background {
+    background: #fff;
+  }
+}
+
+.site-layout-reduce {
+  padding-left: 80px;
+  .ant-layout-content {
+    margin-left: 16px !important;
+  }
+}
+
+.app-sider {
+  z-index: 100;
+  overflow: auto;
+  position: fixed;
+  height: 100vh;
+  left: 0;
+  bottom: 0;
+  top: 0;
+  background-color: black;
+  ul {
+    background: black !important;
+  }
+}
+
+.sider-collapsed {
+  .site-layout {
+    padding-left: 100px;
+  }
+
+  .logo-title {
+    display: none;
+  }
+}

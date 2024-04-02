@@ -29,6 +29,8 @@ const GroupeForm: React.FC = () => {
             ninea: res.data.ninea,
             codeMarchand: res.data.codeMarchand,
             rccm: res.data.rccm,
+            dateCreation:res.data.dateCreation,
+            dateModification:res.data.dateModification,
             numeroTelephone: res.data.numeroTelephone,
             supprime: res.data.supprime,
             typeGroupe: res.data.typeGroupe,
@@ -42,6 +44,8 @@ const GroupeForm: React.FC = () => {
             ninea: res.data.ninea,
             codeMarchand: res.data.codeMarchand,
             rccm: res.data.rccm,
+            dateCreation:res.data.dateCreation,
+            dateModification:res.data.dateModification,
             numeroTelephone: res.data.numeroTelephone,
             tag: res.data.tag,
             logo: res.data.logo,
@@ -87,7 +91,7 @@ const GroupeForm: React.FC = () => {
       </h1>
 
       <Form
-        style={{ marginTop: "50px", marginLeft: "70px" }}
+        style={{ marginTop: "50px" }}
         form={form}
         layout="horizontal"
         size="large"
@@ -126,7 +130,7 @@ const GroupeForm: React.FC = () => {
             </Select>
           </Form.Item>
 
-          <Form.Item label="NINEA" name="ninea">
+          <Form.Item label="Ninea" name="ninea">
             <Input style={{ borderRadius: 0 }} />
           </Form.Item>
 
@@ -134,7 +138,7 @@ const GroupeForm: React.FC = () => {
             <Input style={{ borderRadius: 0 }} />
           </Form.Item>
 
-          <Form.Item label="RCCM" name="rccm">
+          <Form.Item label="Rccm" name="rccm">
             <Input style={{ borderRadius: 0 }} />
           </Form.Item>
 
@@ -148,35 +152,26 @@ const GroupeForm: React.FC = () => {
             <Input style={{ borderRadius: 0 }} />
           </Form.Item>
         </div>
-
-        <div
-          style={{ display: "flex", marginLeft: "500px", marginTop: "20px" }}
-        >
-          <div>
+        <div className="flex items-center justify-center mt-20">
+          <div className="w-full">
             <Button
-              style={{
-                background: "#FF7900",
-                color: "white",
-                borderRadius: "0px",
-              }}
-              icon={<CloseOutlined />}
-              size="large"
+              className="bg-orange-500 text-white rounded-0 w-full"
               onClick={handleCancel}
             >
+              <span className="mr-2">
+                <CloseOutlined />
+              </span>
               Annuler
             </Button>
           </div>
-          <div style={{ margin: "0 10px" }}>
+          <div className="w-full mx-10">
             <Button
-              style={{
-                background: "black",
-                color: "white",
-                borderRadius: "0px",
-              }}
+              className="bg-black text-white rounded-0 w-full"
               htmlType="submit"
-              icon={<SaveOutlined />}
-              size="large"
             >
+              <span className="mr-2">
+                <SaveOutlined />
+              </span>
               Enregistrer
             </Button>
           </div>

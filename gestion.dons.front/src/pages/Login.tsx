@@ -1,60 +1,95 @@
-import React from 'react';
-import { Row, Col, Form, Input, Button } from 'antd';
-import { useNavigate } from 'react-router';
+import React, { useEffect, useState } from "react";
+import IbouSvg from "../assets/images/login/ibou-desktop.svg";
+import Logo from "../assets/images/logo-orange.png";
+import { Form, Input, Button, Modal } from "antd";
+import {
+  connectUser,
+  getUserToken,
+  isTokenExpired,
+  saveUserToken,
+} from "../services/KeycloakService";
+import { useNavigate } from "react-router";
+import { use } from "i18next";
 
-interface LoginProps {
-  onLogin: () => void;
-}
+const Login: React.FC = () => {
+  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
 
-const Login: React.FC<LoginProps> = ({ onLogin }) => {
-  const navigate = useNavigate(); // Appel du hook useNavigate à l'intérieur du composant
-
-  const onFinish = (values: any) => {
-    console.log('Received values:', values);
-    // Simuler une connexion réussie ici
-    onLogin();
-    navigate("/dashboard"); // Utilisation de navigate pour rediriger vers /dashboard
+  useEffect(() => {
+    if (getUserToken()) {
+      navigate("/dashboard");
+    }
+  }, []);
+  const submitLogin = ({ username, password }) => {
+    setLoading(true);
+    connectUser(username, password)
+      .then((res) => {
+        console.log(res);
+        saveUserToken(res.data);
+        navigate("/dashboard");
+        // window.location.reload();
+      })
+      .catch((err) => {
+        console.log(err);
+        Modal.error({
+          content:
+            "Une erreur s'est produite. Veuillez vérifier votre Login et mot de passe",
+        });
+      })
+      .finally(() => setLoading(true));
   };
-
   return (
-    <Row justify="center" style={{ minHeight: '100vh', backgroundColor: '#f0f2f5' }}>
-      <Col xs={24} sm={16} md={12} lg={10} xl={8}>
-        <div style={{ backgroundColor: 'black', height: '100%', padding: '2rem' }}>
-          <h2 style={{ color: 'white' }}>Welcome Back!</h2>
-          <p style={{ color: 'white' }}>Please login to your account.</p>
-        </div>
-      </Col>
-      <Col xs={24} sm={16} md={12} lg={14} xl={16}>
-        <div style={{ padding: '2rem', maxWidth: '400px', margin: '0 auto' }}>
-          <h2>Login</h2>
+    <div className="min-h-screen flex flex-col lg:flex-row">
+      <div className="w-100 lg:w-2/6 login-left bg-black flex flex-col items-center justify-center gap-5">
+        <img src={Logo} alt="Logo" height={60} width={60} />
+        <img src={IbouSvg} alt="Ibou" height={300} width={500} />
+        <h1 className="text-white text-[40px] font-bold mt-5">
+          Wesalo BackOffife
+        </h1>
+      </div>
+      <div className="w-100 lg:w-4/6 flex justify-center items-center my-[50px] lg:my-0">
+        <div className="min-w-[50%]">
+          <h1 className="mb-10 text-[40px] font-bold">Connexion</h1>
           <Form
-            name="login-form"
-            initialValues={{ remember: false }}
-            onFinish={onFinish}
+            name="basic"
+            className="login-form"
+            autoComplete="off"
+            onFinish={submitLogin}
           >
             <Form.Item
+              label="Login Windows"
               name="username"
-              rules={[{ required: true, message: 'Please input your username!' }]}
+              rules={[
+                {
+                  required: true,
+                  message: "Please input your username!",
+                },
+              ]}
             >
-              <Input placeholder="Username" />
+              <Input size="large" />
             </Form.Item>
 
             <Form.Item
+              label="Mot de passe"
               name="password"
-              rules={[{ required: true, message: 'Please input your password!' }]}
+              rules={[
+                {
+                  required: true,
+                  message: "Please input your password!",
+                },
+              ]}
             >
-              <Input.Password placeholder="Password" />
+              <Input.Password size="large" />
             </Form.Item>
-
-            <Form.Item>
-              <Button type="primary" htmlType="submit" style={{ width: '100%' }}>
-                Log in
+            <Form.Item className="flex items-center justify-center">
+              <Button className="button-orange" htmlType="submit">
+                Se connecter
               </Button>
             </Form.Item>
           </Form>
         </div>
-      </Col>
-    </Row>
+      </div>
+    </div>
   );
 };
 

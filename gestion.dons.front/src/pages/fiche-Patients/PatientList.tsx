@@ -1,191 +1,210 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { fetchPatients } from "../../services/PatientService";
-import {
-  Table,
-  Button,
-  Input,
-  Space,
-  TablePaginationConfig,
-  message,
-  Popconfirm,
-} from "antd";
-import { Link } from "react-router-dom";
-import axios from "axios";
-import {
-  DeleteOutlined,
-  EditOutlined,
-  PlusOutlined,
-  SearchOutlined,
-} from "@ant-design/icons";
-import { DataPatient } from "../../model/fiche-patient.model";
+  import React, { useCallback, useEffect, useMemo, useState } from "react";
+  import { Table, Button, Input, message, Popconfirm } from "antd";
+  import { useNavigate } from "react-router-dom";
+  import {
+    DeleteOutlined,
+    EditOutlined,
+    PlusOutlined,
+    SearchOutlined,
+    DownOutlined,
+  } from "@ant-design/icons";
+  import { exportToExcel } from "../../services/exportToExcel";
+  import PatientService from "../../services/PatientService";
 
-const size = "large";
+  const size = "large";
 
-const PatientList: React.FC = () => {
-  const [data, setData] = useState<DataPatient[]>([]);
-  const [totalItems, setTotalItems] = useState(0);
-  const [loading, setLoading] = useState(false);
+  const PatientList = () => {
+    const navigate = useNavigate();
+    const [data, setData] = useState([]);
+    const [totalItems, setTotalItems] = useState(0);
+    const [loading, setLoading] = useState(false);
 
-  const [pagination, setPagination] = useState({
-    page: 0,
-    size: 10,
-    sort: { col: "dateCreation", type: "desc" },
-    filter: "",
-  });
+    const [pagination, setPagination] = useState({
+      page: 0,
+      size: 10,
+      sort: { col: "dateCreation", type: "desc" },
+      filter: "",
+    });
 
-  const handleDeletePatient = (id: string) => {
-    const patientId = parseInt(id, 10); 
-    axios
-      .delete(`/fiche-patients/${patientId}`)
-      .then(() => {
-        message.success("Patient supprimé avec succès !");
-        loadData();
-      })
-      .catch((err) => {
-        console.log(err);
-        message.error(
-          "Une erreur s'est produite lors de la suppression du patient."
+    const handleDeletePatient = (id) => {
+      PatientService.deletePatient(id)
+        .then(() => {
+          message.success("Patient supprimé avec succès !");
+          loadData();
+        })
+        .catch((err) => {
+          console.error(err);
+          message.error(
+            "Une erreur s'est produite lors de la suppression du patient."
+          );
+        });
+    };
+
+    const loadData = useCallback(async () => {
+      setLoading(true);
+      try {
+        const result = await PatientService.fetchPatients(
+          pagination.page,
+          pagination.size,
+          pagination.sort,
+          pagination.filter
         );
-      });
-  };
-  
-  const loadData = useCallback(async () => {
-    setLoading(true);
-    try {
-      const result = await fetchPatients(
-        pagination.page,
-        pagination.size,
-        pagination.sort,
-        pagination.filter
-      );
-      setData(result.data);
-      setTotalItems(result.total);
-    } catch (error) {
-      console.error(
-        "Une erreur s'est produite lors du chargement des données :",
-        error
-      );
-    } finally {
-      setLoading(false);
-    }
-  }, [pagination]);
+        setData(result.data);
+        setTotalItems(result.total);
+      } catch (error) {
+        console.error(
+          "Une erreur s'est produite lors du chargement des données :",
+          error
+        );
+      } finally {
+        setLoading(false);
+      }
+    }, [pagination]);
 
-  useEffect(() => {
-    loadData();
-  }, [loadData]);
+    useEffect(() => {
+      loadData();
+    }, [loadData]);
 
-  const handleSearch = (value: string) => {
-    setPagination((prev) => ({ ...prev, page: 0, filter: value }));
-  };
+    const handleSearch = (value) => {
+      setPagination((prev) => ({ ...prev, page: 0, filter: value }));
+    };
 
-  const handlePagination = (newPagination: TablePaginationConfig, _, sort) => {
-    setPagination((prev) => ({
-      ...prev,
-      page: newPagination.current ? newPagination.current - 1 : 0,
-      size: newPagination.pageSize || 10,
-      sort: sort.field
-        ? { col: sort.field, type: sort.order === "ascend" ? "asc" : "desc" }
-        : prev.sort,
-    }));
-  };
+    const handlePagination = (newPagination, _, sort) => {
+      setPagination((prev) => ({
+        ...prev,
+        page: newPagination.current ? newPagination.current - 1 : 0,
+        size: newPagination.pageSize || 10,
+        sort: sort.field
+          ? { col: sort.field, type: sort.order === "ascend" ? "asc" : "desc" }
+          : prev.sort,
+      }));
+    };
 
-  const columns = [
-    {
-      title: "Prénom",
-      dataIndex: "prenom",
-      key: "prenom",
-      sorter: true,
-    },
-    {
-      title: "Nom",
-      dataIndex: "nom",
-      key: "nom",
-      sorter: true,
-    },
-    {
-      title: "Adresse",
-      dataIndex: "adresse",
-      key: "adresse",
-      sorter: true,
-    },
-    {
-      title: "Age",
-      dataIndex: "age",
-      key: "age",
-      sorter: true,
-    },
-    {
-      title: "Maladie",
-      dataIndex: "maladie",
-      key: "maladie",
-      sorter: true,
-    },
-    {
-      title: "Details",
-      dataIndex: "details",
-      key: "details",
-      sorter: true,
-    },
-    {
-      title: "Numéro-Téléphone",
-      dataIndex: "numeroTelephone",
-      key: "numeroTelephone",
-      sorter: true,
-    },
-    {
-      title: "Numéro-Identification",
-      dataIndex: "numeroIdentification",
-      key: "numeroIdentification",
-      sorter: true,
-    },
-    {
-      title: "Type-Identification",
-      dataIndex: "typeIdentification",
-      key: "typeIdentification",
-      sorter: true,
-    },
-    {
-      title: "Actions",
-      key: "actions",
-      render: (text: any, record: DataPatient) => (
-        <Space size="small">
-          <Link to={`/addpatient/${record.id}`}>
-            <EditOutlined style={{ color: "#FF7900" }} />
-          </Link>
-          <Popconfirm
-            title="Êtes-vous sûr de vouloir supprimer ce patient ?"
-            onConfirm={() => handleDeletePatient (record.id)}
-            okText="Oui"
-            cancelText="Non"
-          >
-            <Button type="link" style={{ color: "red" }}>
-              <DeleteOutlined />
-            </Button>
-          </Popconfirm>
-        </Space>
-      ),
-    },
-  ];
+    const handleEditPatient = (id) => {
+      navigate(`/addpatient/${id}`);
+    };
 
-  const dataSource = useMemo(() => {
-    return data?.map((item, index) => ({
-      id: item.id,
-      index: index + 1,
-      prenom: item.prenom,
-      nom: item.nom,
-      adresse: item.adresse,
-      age: item.age,
-      maladie: item.maladie,
-      details: item.details,
-      numeroTelephone: item.numeroTelephone,
-      numeroIdentification: item.numeroIdentification,
-      typeIdentification: item.typeIdentification,
-    }));
-  }, [data]);
+    const columns: any[] = [
+      {
+        title: "Prénom",
+        dataIndex: "prenom",
+        key: "prenom",
+        width: 150,
+        sorter: true,
+      },
+      {
+        title: "Nom",
+        dataIndex: "nom",
+        key: "nom",
+        width: 150,
+        sorter: true,
+      },
+      {
+        title: "Adresse",
+        dataIndex: "adresse",
+        key: "adresse",
+        width: 150,
+        sorter: true,
+      },
+      {
+        title: "Age",
+        dataIndex: "age",
+        key: "age",
+        width: 150,
+        sorter: true,
+      },
+      {
+        title: "Maladie",
+        dataIndex: "maladie",
+        key: "maladie",
+        width: 150,
+        sorter: true,
+      },
+      {
+        title: "Details",
+        dataIndex: "details",
+        key: "details",
+        width: 150,
+        sorter: true,
+      },
+      {
+        title: "Numero Telephone",
+        dataIndex: "numeroTelephone",
+        key: "numeroTelephone",
+        width: 150,
+        sorter: true,
+      },
+      {
+        title: "Numero Identification",
+        dataIndex: "numeroIdentification",
+        key: "numeroIdentification",
+        width: 200,
+        sorter: true,
+      },
+      {
+        title: "type Identification",
+        dataIndex: "typeIdentification",
+        key: "typeIdentification",
+        width: 200,
+        sorter: true,
+      },
+      {
+        title: "Date Création",
+        dataIndex: "dateCreation",
+        key: "dateCreation",
+        width: 200,
+        sorter: true,
+      },
+      {
+        title: "Date Modification",
+        dataIndex: "dateModification",
+        key: "dateModification",
+        width: 200,
+        sorter: true,
+      },
 
-  return (
-    <>
-      <div style={{ marginRight: "20px" }}>
+      {
+        title: "Actions",
+        key: "actions",
+        fixed: "right",
+        width: 150,
+        render: (text, record) => (
+          <div style={{ display: "flex" }}>
+            <Button
+              type="link"
+              style={{ color: "#FF7900" }}
+              size={size}
+              icon={<EditOutlined />}
+              onClick={() => handleEditPatient(record.id)}
+            />
+            <Popconfirm
+              title="Êtes-vous sûr de vouloir supprimer ce patient ?"
+              onConfirm={() => handleDeletePatient(record.id)}
+              okText="Oui"
+              cancelText="Non"
+              okButtonProps={{ style: { color: "white", background: "#66BB6A" } }}
+              cancelButtonProps={{
+                style: { color: "white", background: "#FF7900" },
+              }}
+            >
+              <Button
+                type="link"
+                style={{ color: "red" }}
+                size={size}
+                icon={<DeleteOutlined />}
+              />
+            </Popconfirm>
+          </div>
+        ),
+      },
+    ];
+
+    const handleAddPatient = () => {
+      navigate("/addpatient");
+    };
+
+    return (
+      <>
         <h1 className="text-3xl font-bold my-3">Patients</h1>
         <div className="flex justify-between gap-3">
           <Input
@@ -199,12 +218,30 @@ const PatientList: React.FC = () => {
           />
           <div className="flex gap-2">
             <Button
-              className="text-white bg-black !rounded-none"
+              style={{
+                background: "black",
+                color: "white",
+                margin: "0 10px",
+                borderRadius: "0px",
+              }}
               icon={<PlusOutlined />}
-              href="/addPatient"
               size={size}
+              onClick={handleAddPatient}
             >
               Nouveau
+            </Button>
+            <Button
+              style={{
+                background: "#FF7900",
+                color: "white",
+                margin: "0 10px",
+                borderRadius: "0px",
+              }}
+              icon={<DownOutlined />}
+              size={size}
+              onClick={() => exportToExcel(data)}
+            >
+              Exporter
             </Button>
           </div>
         </div>
@@ -214,8 +251,9 @@ const PatientList: React.FC = () => {
             scroll={{ x: "scroll" }}
             bordered
             onChange={handlePagination}
-            columns={columns as any}
-            dataSource={dataSource}
+            columns={columns}
+            dataSource={data}
+            rowKey={(r) => r.id}
             pagination={{
               current: pagination.page + 1,
               pageSize: pagination.size,
@@ -223,9 +261,8 @@ const PatientList: React.FC = () => {
             }}
           />
         </div>
-      </div>
-    </>
-  );
-};
+      </>
+    );
+  };
 
-export default PatientList;
+  export default PatientList;
