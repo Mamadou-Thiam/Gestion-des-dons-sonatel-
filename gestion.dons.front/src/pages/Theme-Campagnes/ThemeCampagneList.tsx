@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Table,
   Button,
@@ -9,7 +9,6 @@ import {
   Form,
   Popconfirm,
 } from "antd";
-import axios from "axios";
 import {
   SaveOutlined,
   CloseOutlined,
@@ -18,11 +17,10 @@ import {
   PlusOutlined,
   SearchOutlined,
   DownOutlined,
-  UploadOutlined,
 } from "@ant-design/icons";
 import DataThemeCampagne from "../../model/theme-campagne.model";
-import { fetchThemeCampagnes } from "../../services/ThemeCampagneService";
 import { exportToExcel } from "../../services/exportToExcel";
+import ThemeCampagneService from "../../services/ThemeCampagneService";
 
 const size = "large";
 
@@ -40,8 +38,7 @@ const ThemeCampagneList: React.FC = () => {
   const [theme, setTheme] = useState<DataThemeCampagne | undefined>();
 
   const handleDeleteTheme = (id: number) => {
-    axios
-      .delete(`/theme-campagnes/${id}`)
+    ThemeCampagneService.deleteThemeCampagne(id)
       .then(() => {
         message.success("Thème supprimé avec succès !");
         loadData();
@@ -57,7 +54,7 @@ const ThemeCampagneList: React.FC = () => {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await fetchThemeCampagnes(
+      const result = await ThemeCampagneService.fetchThemeCampagnes(
         pagination.page,
         pagination.size,
         pagination.sort,
@@ -111,8 +108,8 @@ const ThemeCampagneList: React.FC = () => {
     };
 
     const promise = theme
-      ? axios.put(`/theme-campagnes/${theme.id}`, data)
-      : axios.post("/theme-campagnes", data);
+      ? ThemeCampagneService.updateThemeCampagne(theme.id, data)
+      : ThemeCampagneService.createThemeCampagne(data);
 
     promise
       .then((res) => {
@@ -141,6 +138,7 @@ const ThemeCampagneList: React.FC = () => {
       key: "description",
       sorter: true,
     },
+
     {
       title: "Date Création",
       dataIndex: "dateCreation",
@@ -156,8 +154,9 @@ const ThemeCampagneList: React.FC = () => {
     {
       title: "Actions",
       key: "actions",
+      width: 150,
       render: (text: any, record: DataThemeCampagne) => (
-        <div className="flex gap-2 my-3">
+        <div className="flex">
           <Button type="link" onClick={() => handleEditTheme(record)}>
             <EditOutlined style={{ color: "#FF7900" }} />
           </Button>
@@ -180,18 +179,18 @@ const ThemeCampagneList: React.FC = () => {
     },
   ];
 
-  const dataSource = useMemo(() => {
-    return data?.map((item, index) => ({
-      key: item.id,
-      index: index + 1,
-      libelle: item.libelle,
-      description: item.description,
-      id: item.id,
-      dateCreation:item.dateCreation,
-      dateModification:item.dateModification,
-      supprime: item.supprime,
-    }));
-  }, [data]);
+  // const dataSource = useMemo(() => {
+  //   return data?.map((item, index) => ({
+  //     key: item.id,
+  //     index: index + 1,
+  //     libelle: item.libelle,
+  //     description: item.description,
+  //     id: item.id,
+  //     dateCreation:item.dateCreation,
+  //     dateModification:item.dateModification,
+  //     supprime: item.supprime,
+  //   }));
+  // }, [data]);
 
   return (
     <>
@@ -208,27 +207,13 @@ const ThemeCampagneList: React.FC = () => {
             onChange={(e) => handleSearch(e.target.value)}
           />
           <div className="flex gap-2">
-            {/* <Button
-              className="text-white bg-black !rounded-none "
-              icon={<PlusOutlined />}
-              onClick={() => {
-                // setTheme(undefined);
-                setVisible(true);
-              }}
-              size={size}
-            >
-              Nouveau
-            </Button> */}
             <Button
               style={{
-                background: "black",
-                color: "white",
-                margin: "0 10px",
                 borderRadius: "0px",
               }}
+              className="white-button"
               icon={<PlusOutlined />}
               onClick={() => {
-                // setTheme(undefined);
                 setVisible(true);
               }}
               size={size}
@@ -236,19 +221,14 @@ const ThemeCampagneList: React.FC = () => {
               Nouveau
             </Button>
             <Button
-              style={{
-                background: "#FF7900",
-                color: "white",
-                margin: "0 10px",
-                borderRadius: "0px",
-              }}
+              className="button-orange"
+              style={{ borderRadius: "0px" }}
               icon={<DownOutlined />}
               size={size}
-              onClick={() => exportToExcel(dataSource)}
+              onClick={() => exportToExcel(data)}
             >
               Exporter
             </Button>
-            
           </div>
         </div>
         <div style={{ marginTop: "20px" }}>
@@ -258,7 +238,7 @@ const ThemeCampagneList: React.FC = () => {
             bordered
             onChange={handlePagination}
             columns={columns}
-            dataSource={dataSource}
+            dataSource={data}
             pagination={{
               current: pagination.page + 1,
               pageSize: pagination.size,
@@ -274,11 +254,7 @@ const ThemeCampagneList: React.FC = () => {
           centered // Centre le contenu du modal
           width={700}
         >
-          <Form
-            layout="vertical"
-            onFinish={handleSaveTheme}
-            initialValues={theme}
-          >
+          <Form layout="vertical" onFinish={handleSaveTheme} autoComplete="off">
             <Form.Item
               label="Libellé"
               name="libelle"
@@ -291,14 +267,14 @@ const ThemeCampagneList: React.FC = () => {
             <Form.Item label="Description" name="description">
               <Input.TextArea />
             </Form.Item>
+
             <div
               className="flex  gap-3"
-              style={{ alignItems: "center", marginLeft: "220px" }}
+              style={{ alignContent: "center", justifyContent: "flex-end" }}
             >
               <Button
+                className="white-button"
                 style={{
-                  background: "#FF7900",
-                  color: "white",
                   borderRadius: "0px",
                 }}
                 icon={<CloseOutlined />}
@@ -308,9 +284,8 @@ const ThemeCampagneList: React.FC = () => {
                 Annuler
               </Button>
               <Button
+                className="button-orange"
                 style={{
-                  background: "black",
-                  color: "white",
                   borderRadius: "0px",
                 }}
                 htmlType="submit"

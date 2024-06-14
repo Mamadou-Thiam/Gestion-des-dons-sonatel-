@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { Switch } from "antd";
 import {
   Table,
@@ -9,17 +9,15 @@ import {
   Popconfirm,
 } from "antd";
 import { Link, useNavigate } from "react-router-dom";
-import axios from "axios";
 import {
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
   SearchOutlined,
   DownOutlined,
-  
 } from "@ant-design/icons";
 import { DataCampagne } from "../../model/Campagne.model";
-import { fetchCampagnes } from "../../services/CampagneService";
+import CampagneService from "../../services/CampagneService";
 import { exportToExcel } from "../../services/exportToExcel";
 
 const size = "large";
@@ -29,7 +27,6 @@ const CampagneList: React.FC = () => {
   const [data, setData] = useState<DataCampagne[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
-
   const [pagination, setPagination] = useState({
     page: 0,
     size: 10,
@@ -37,47 +34,10 @@ const CampagneList: React.FC = () => {
     filter: "",
   });
 
-  const handleDeleteCampagne = (id: number) => {
-    axios
-      .delete(`/campagnes/${id}`)
-      .then(() => {
-        message.success("Campagne supprimée avec succès !");
-        loadData();
-      })
-      .catch((err) => {
-        console.log(err);
-        message.error(
-          "Une erreur s'est produite lors de la suppression de la campagne."
-        );
-      });
-  };
-
-  const handleActivateCampagne = async (id: number) => {
-    try {
-      await axios.get(`/campagnes/activate/${id}`);
-      message.success("Campagne activée avec succès !");
-      loadData();
-    } catch (error) {
-      console.error("Erreur lors de l'activation de la campagne :", error);
-      message.error("Une erreur s'est produite lors de l'activation.");
-    }
-  };
-
-  const handleDeactivateCampagne = async (id: number) => {
-    try {
-      await axios.get(`/campagnes/deactivate/${id}`);
-      message.success("Campagne désactivée avec succès !");
-      loadData();
-    } catch (error) {
-      console.error("Erreur lors de la désactivation de la campagne :", error);
-      message.error("Une erreur s'est produite lors de la désactivation.");
-    }
-  };
-
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await fetchCampagnes(
+      const result = await CampagneService.fetchCampagnes(
         pagination.page,
         pagination.size,
         pagination.sort,
@@ -115,11 +75,42 @@ const CampagneList: React.FC = () => {
   };
 
   const handleConfirmDelete = (id: number) => {
-    handleDeleteCampagne(id);
+    CampagneService.deleteCampagne(id)
+      .then(() => {
+        message.success("campagne supprimé avec succes!");
+        loadData();
+      })
+      .catch((err) => {
+        message.error(
+          "une erreur s'est produite lors de la suppression du campagne"
+        );
+      });
   };
 
   const handleCancelDelete = () => {
     message.info("Suppression annulée");
+  };
+
+  const handleActivateCampagne = async (id: number) => {
+    try {
+      await CampagneService.activateCampagne(id);
+      message.success("Campagne activée avec succès !");
+      loadData();
+    } catch (error) {
+      console.error("Erreur lors de l'activation de la campagne :", error);
+      message.error("Une erreur s'est produite lors de l'activation.");
+    }
+  };
+
+  const handleDeactivateCampagne = async (id: number) => {
+    try {
+      await CampagneService.deactivateCampagne(id);
+      message.success("Campagne désactivée avec succès !");
+      loadData();
+    } catch (error) {
+      console.error("Erreur lors de la désactivation de la campagne :", error);
+      message.error("Une erreur s'est produite lors de la désactivation.");
+    }
   };
 
   const columns = [
@@ -201,6 +192,24 @@ const CampagneList: React.FC = () => {
       sorter: true,
     },
     {
+      title: "Groupe",
+      dataIndex: ["groupe", "libelle"],
+      key: "groupe",
+      width: 150,
+      sorter: true,
+
+      render: (text, record) => <span>{record.groupe.libelle}</span>,
+    },
+    {
+      title: "Theme",
+      dataIndex: ["theme", "libelle"],
+      key: "theme",
+      width: 150,
+      sorter: true,
+
+      render: (text, record) => <span>{record.theme.libelle}</span>,
+    },
+    {
       title: "Date Creation",
       dataIndex: "dateCreation",
       key: "dateCreation",
@@ -221,27 +230,24 @@ const CampagneList: React.FC = () => {
       width: 150,
       render: (statut: string, record: any) => (
         <span>
-  {record.active ? (
-    <>
-      
-      <span className="blue-circle"></span>
-      <span>Actif </span>
-    </>
-  ) : (
-    <>
-     
-      <span className="red-circle"></span>
-      <span>Inactif </span>
-    </>
-  )}
-</span>
-
+          {record.active ? (
+            <>
+              <span className="blue-circle mr-2"></span>
+              <span>Actif </span>
+            </>
+          ) : (
+            <div>
+              <span className="red-circle mr-2"></span>
+              <span>Inactif </span>
+            </div>
+          )}
+        </span>
       ),
     },
     {
       title: "Actions",
       key: "actions",
-      width: 250,
+      width: 200,
       fixed: "right",
       render: (text: any, record: any) => (
         <div>
@@ -259,7 +265,9 @@ const CampagneList: React.FC = () => {
             onCancel={handleCancelDelete}
             okText="Oui"
             cancelText="Non"
-            okButtonProps={{ style: { color: "white", background: "#66BB6A" } }}
+            okButtonProps={{
+              style: { color: "white", background: "#66BB6A" },
+            }}
             cancelButtonProps={{
               style: { color: "white", background: "#FF7900" },
             }}
@@ -288,28 +296,6 @@ const CampagneList: React.FC = () => {
     },
   ];
 
-  const dataSource = useMemo(() => {
-    return data?.map((item, index) => ({
-      key: item.id,
-      id: item.id,
-      index: index + 1,
-      reference: item.reference,
-      libelle: item.libelle,
-      description: item.description,
-      banniere: item.banniere,
-      dateDebut: item.dateDebut,
-      dateFin: item.dateFin,
-      montantCible: item.montantCible,
-      montantActuel: item.montantActuel,
-      nombreDon: item.nombreDon,
-      montantDonFixe: item.montantDonFixe,
-      montantKit: item.montantKit,
-      dateCreation: item.dateCreation,
-      dateModification: item.dateModification,
-      active: item.active,
-    }));
-  }, [data]);
-
   const handleAddCampagne = () => {
     navigate("/addCampagne");
   };
@@ -333,11 +319,9 @@ const CampagneList: React.FC = () => {
           <div className="flex gap-2">
             <Button
               style={{
-                background: "black",
-                color: "white",
-                margin: "0 10px",
                 borderRadius: "0px",
               }}
+              className="white-button"
               icon={<PlusOutlined />}
               size={size}
               onClick={handleAddCampagne}
@@ -346,14 +330,12 @@ const CampagneList: React.FC = () => {
             </Button>
             <Button
               style={{
-                background: "#FF7900",
-                color: "white",
-                margin: "0 10px",
                 borderRadius: "0px",
               }}
+              className="button-orange"
               icon={<DownOutlined />}
               size={size}
-              onClick={() => exportToExcel(dataSource)}
+              onClick={() => exportToExcel(data)}
             >
               Exporter
             </Button>
@@ -366,7 +348,7 @@ const CampagneList: React.FC = () => {
             bordered
             onChange={handlePagination}
             columns={columns as any}
-            dataSource={dataSource}
+            dataSource={data}
             pagination={{
               current: pagination.page + 1,
               pageSize: pagination.size,

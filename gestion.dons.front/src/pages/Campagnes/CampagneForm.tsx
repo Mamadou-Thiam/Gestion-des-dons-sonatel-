@@ -9,30 +9,16 @@ const CampagneForm: React.FC = () => {
   const [form] = Form.useForm();
   const { id } = useParams();
   const [groups, setGroups] = useState([]);
-  const [selectedGroupId, setSelectedGroupId] = useState(null);
+  const [selectedGroupId, setSelectedGroupId] = useState<string | null>(null);
+  const [selectedGroupLabel, setSelectedGroupLabel] = useState<string | null>(
+    null
+  ); // New state for group label
   const [themes, setThemes] = useState([]);
-  const [selectedThemeId, setSelectedThemeId] = useState(null);
-  const [campagne, setCampagne] = useState<DataCampagne>({
-    id: "",
-    libelle: "",
-    reference: "",
-    description: "",
-    dateDebut: "",
-    dateFin: "",
-    
-    montantCible: "",
-    montantActuel: "",
-    montantKit: "",
-    montantDonFixe: "",
-    nombreDon: 0,
-    banniere: "",
-    dateCreation: "",
-    dateModification: "",
-    groupe: { id: "" },
-    theme: { id: "" },
-    active: false,
-    supprime: false,
-  });
+  const [selectedThemeId, setSelectedThemeId] = useState<string | null>(null);
+  const [selectedThemeLabel, setSelectedThemeLabel] = useState<string | null>(
+    null
+  ); // New state for theme label
+  const [campagne, setCampagne] = useState<DataCampagne | null>(null);
 
   const navigate = useNavigate();
   const handleCancel = () => {
@@ -67,24 +53,27 @@ const CampagneForm: React.FC = () => {
           setCampagne(res.data);
           form.setFieldsValue(res.data);
           setSelectedGroupId(res.data.groupe.id);
+          setSelectedGroupLabel(res.data.groupe.libelle); // Set group label
           setSelectedThemeId(res.data.theme.id);
+          setSelectedThemeLabel(res.data.theme.libelle); // Set theme label
         })
         .catch((err) => {
-          console.log("Error from Update");
+          console.log("Error fetching campaign data", err);
         });
     }
   }, [id, form]);
 
-  const handleSaveGroupe = async (values) => {
+  const handleSaveCampagne = async (values) => {
     const data = {
       ...campagne,
       ...values,
       groupe: { id: selectedGroupId },
       theme: { id: selectedThemeId },
       nombreDon: campagne?.nombreDon || 0,
+      reference: campagne?.reference || "ref",
     };
 
-    const promise = campagne.id
+    const promise = campagne?.id
       ? axios.put(`/campagnes/${campagne.id}`, data)
       : axios.post("/campagnes", data);
 
@@ -94,16 +83,31 @@ const CampagneForm: React.FC = () => {
         navigate("/campagne");
       })
       .catch((err) => {
-        console.log(err);
-        console.log("Error in Save!");
+        console.log("Error in Save!", err);
         message.error("Erreur lors de l'enregistrement de la campagne.");
       });
+  };
+
+  const handleGroupChange = (value) => {
+    setSelectedGroupId(value);
+    const selectedGroup = groups.find((group) => group.id === value);
+    if (selectedGroup) {
+      setSelectedGroupLabel(selectedGroup.libelle);
+    }
+  };
+
+  const handleThemeChange = (value) => {
+    setSelectedThemeId(value);
+    const selectedTheme = themes.find((theme) => theme.id === value);
+    if (selectedTheme) {
+      setSelectedThemeLabel(selectedTheme.libelle);
+    }
   };
 
   return (
     <div>
       <h1 className="text-3xl font-bold my-3">
-        {campagne.id
+        {campagne?.id
           ? "Formulaire de modification d'une campagne"
           : "Formulaire d'ajout d'une campagne"}
       </h1>
@@ -111,11 +115,12 @@ const CampagneForm: React.FC = () => {
       <Form
         style={{ marginTop: "50px" }}
         form={form}
+        autoComplete="off"
         layout="horizontal"
         size="large"
         className="custom-form"
-        initialValues={campagne}
-        onFinish={handleSaveGroupe}
+        initialValues={campagne || {}}
+        onFinish={handleSaveCampagne}
       >
         <div className="grid grid-cols-2 gap-y-1 gap-x-32">
           <Form.Item
@@ -142,14 +147,6 @@ const CampagneForm: React.FC = () => {
           <Form.Item label="Date de fin" name="dateFin">
             <Input type="date" style={{ borderRadius: 0 }} />
           </Form.Item>
-
-          {/* <Form.Item label="Date de Création" name="dateCreation">
-            <Input type="date" style={{ borderRadius: 0 }} />
-          </Form.Item>
-
-          <Form.Item label="Date de Modification" name="dateModification">
-            <Input type="date"  style={{ borderRadius: 0 }} />
-          </Form.Item> */}
 
           <Form.Item label="Montant cible" name="montantCible">
             <Input type="Number" style={{ borderRadius: 0 }} />
@@ -183,10 +180,11 @@ const CampagneForm: React.FC = () => {
                 label: group.libelle,
               }))}
               placeholder="Sélectionner un groupe"
-              onChange={(value) => setSelectedGroupId(value)}
+              onChange={handleGroupChange}
             />
           </Form.Item>
-          <Form.Item label="Theme" name="themeId">
+
+          <Form.Item label="Thème" name="themeId">
             <Select
               style={{ width: "100%", borderRadius: "0px" }}
               options={themes.map((theme) => ({
@@ -194,15 +192,28 @@ const CampagneForm: React.FC = () => {
                 label: theme.libelle,
               }))}
               placeholder="Sélectionner un thème"
-              onChange={(value) => setSelectedThemeId(value)}
+              onChange={handleThemeChange}
             />
           </Form.Item>
         </div>
 
-        <div className="flex items-center ml-500 mt-20 ">
-          <div className="w-full">
+        {selectedGroupLabel && (
+          <div>
+            <p>Libellé du groupe sélectionné: {selectedGroupLabel}</p>
+          </div>
+        )}
+
+        {selectedThemeLabel && (
+          <div>
+            <p>Libellé du thème sélectionné: {selectedThemeLabel}</p>
+          </div>
+        )}
+
+        <div className="flex justify-end mt-11">
+          <div>
             <Button
-              className="bg-orange-500 text-white rounded-0 w-full border-transparent"
+              style={{ borderRadius: "0px" }}
+              className="white-button"
               onClick={handleCancel}
             >
               <span className="mr-2">
@@ -211,9 +222,10 @@ const CampagneForm: React.FC = () => {
               Annuler
             </Button>
           </div>
-          <div className="w-full mx-10">
+          <div>
             <Button
-              className="bg-black text-white rounded-0 w-full"
+              style={{ borderRadius: "0px", margin: "0 10px" }}
+              className="button-orange"
               htmlType="submit"
             >
               <span className="mr-2">

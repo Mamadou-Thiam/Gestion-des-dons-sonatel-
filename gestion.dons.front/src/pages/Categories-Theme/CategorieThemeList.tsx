@@ -1,16 +1,14 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
   Table,
   Button,
   Input,
-  Space,
   TablePaginationConfig,
   message,
   Modal,
   Form,
   Popconfirm,
 } from "antd";
-import axios from "axios";
 import {
   SaveOutlined,
   CloseOutlined,
@@ -19,11 +17,10 @@ import {
   PlusOutlined,
   SearchOutlined,
   DownOutlined,
-  UploadOutlined,
 } from "@ant-design/icons";
-import { DataCategorieTheme } from "../../model/categorie-theme.model";
-import { fetchThemeCategorie } from "../../services/CategorieThemeService";
 import { exportToExcel } from "../../services/exportToExcel";
+import { DataCategorieTheme } from "../../model/categorie-theme.model";
+import CategorieThemeService from "../../services/CategorieThemeService";
 
 const size = "large";
 
@@ -41,16 +38,15 @@ const CategorieThemeList: React.FC = () => {
   const [categorie, setCategorie] = useState<DataCategorieTheme | undefined>();
 
   const handleDeleteCategorie = (id: number) => {
-    axios
-      .delete(`/categorie-themes/${id}`)
+    CategorieThemeService.deleteCategorieTheme(id)
       .then(() => {
-        message.success("Catégorie supprimée avec succès !");
+        message.success("categorie theme supprimé avec succès !");
         loadData();
       })
       .catch((err) => {
         console.log(err);
         message.error(
-          "Une erreur s'est produite lors de la suppression de la catégorie."
+          "Une erreur s'est produite lors de la suppression du categorie theme."
         );
       });
   };
@@ -58,7 +54,7 @@ const CategorieThemeList: React.FC = () => {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await fetchThemeCategorie(
+      const result = await CategorieThemeService.fetchCategorieTheme(
         pagination.page,
         pagination.size,
         pagination.sort,
@@ -96,8 +92,8 @@ const CategorieThemeList: React.FC = () => {
   };
 
   const handleEditCategorie = (record: DataCategorieTheme) => {
-    setCategorie(record);
     setVisible(true);
+    setCategorie(record);
   };
 
   const handleCancel = () => {
@@ -112,20 +108,21 @@ const CategorieThemeList: React.FC = () => {
     };
 
     const promise = categorie
-      ? axios.put(`/categorie-themes/${categorie.id}`, data)
-      : axios.post("/categorie-themes", data);
+      ? CategorieThemeService.updateCategorieTheme(categorie.id, data)
+      : CategorieThemeService.createCategorieTheme(data);
 
     promise
       .then((res) => {
         console.log(res);
-        message.success("Catégorie enregistrée avec succès !");
-        setVisible(false);
+
+        message.success("categorie enregistré avec succès !");
         loadData();
+        setVisible(false);
       })
       .catch((err) => {
         console.log(err);
         console.log("Error in Save!");
-        message.error("Erreur lors de l'enregistrement de la catégorie.");
+        message.error("Erreur lors de l'enregistrement du categorie.");
       });
   };
 
@@ -145,7 +142,7 @@ const CategorieThemeList: React.FC = () => {
     {
       title: "Date Création",
       dataIndex: "dateCreation",
-      key: "dateCreation",
+      key: "dateModification",
       sorter: true,
     },
     {
@@ -157,13 +154,15 @@ const CategorieThemeList: React.FC = () => {
     {
       title: "Actions",
       key: "actions",
+      width: 150,
+
       render: (text: any, record: DataCategorieTheme) => (
-        <Space size="small">
+        <div className="flex">
           <Button type="link" onClick={() => handleEditCategorie(record)}>
             <EditOutlined style={{ color: "#FF7900" }} />
           </Button>
           <Popconfirm
-            title="Êtes-vous sûr de vouloir supprimer cette catégorie ?"
+            title="Êtes-vous sûr de vouloir supprimer ce thème ?"
             onConfirm={() => handleDeleteCategorie(Number(record.id))}
             okText="Oui"
             cancelText="Non"
@@ -176,23 +175,10 @@ const CategorieThemeList: React.FC = () => {
               <DeleteOutlined />
             </Button>
           </Popconfirm>
-        </Space>
+        </div>
       ),
     },
   ];
-
-  const dataSource = useMemo(() => {
-    return data?.map((item, index) => ({
-      key: item.id,
-      index: index + 1,
-      libelle: item.libelle,
-      description: item.description,
-      dateCreation:item.dateCreation,
-      dateModification:item.dateModification,
-      id: item.id,
-      supprime: item.supprime,
-    }));
-  }, [data]);
 
   return (
     <>
@@ -200,7 +186,7 @@ const CategorieThemeList: React.FC = () => {
         <h1 className="text-3xl font-bold my-3">Catégorie Thèmes</h1>
         <div className="flex justify-between gap-3">
           <Input
-            placeholder="Rechercher par libellé"
+            placeholder="Rechercher par libelle"
             suffix={<SearchOutlined />}
             style={{ borderRadius: "0px" }}
             size={size}
@@ -211,14 +197,11 @@ const CategorieThemeList: React.FC = () => {
           <div className="flex gap-2">
             <Button
               style={{
-                background: "black",
-                color: "white",
-                margin: "0 10px",
                 borderRadius: "0px",
               }}
+              className="white-button"
               icon={<PlusOutlined />}
               onClick={() => {
-                // setTheme(undefined);
                 setVisible(true);
               }}
               size={size}
@@ -227,18 +210,15 @@ const CategorieThemeList: React.FC = () => {
             </Button>
             <Button
               style={{
-                background: "#FF7900",
-                color: "white",
-                margin: "0 10px",
                 borderRadius: "0px",
               }}
+              className="button-orange"
               icon={<DownOutlined />}
               size={size}
-              onClick={() => exportToExcel(dataSource)}
+              onClick={() => exportToExcel(data)}
             >
               Exporter
             </Button>
-            
           </div>
         </div>
         <div style={{ marginTop: "20px" }}>
@@ -247,8 +227,8 @@ const CategorieThemeList: React.FC = () => {
             scroll={{ x: "scroll" }}
             bordered
             onChange={handlePagination}
-            columns={columns as any}
-            dataSource={dataSource}
+            columns={columns}
+            dataSource={data}
             pagination={{
               current: pagination.page + 1,
               pageSize: pagination.size,
@@ -257,17 +237,21 @@ const CategorieThemeList: React.FC = () => {
           />
         </div>
         <Modal
-          title={categorie ? "Modifier la catégorie" : "Ajouter une catégorie"}
+          title={
+            categorie
+              ? "Formulaire de modification du Categorie theme"
+              : "Formulaire d'ajout d'un categorie theme"
+          }
           visible={visible}
           onCancel={handleCancel}
           footer={null}
-          centered
+          centered // Centre le contenu du modal
           width={700}
         >
           <Form
             layout="vertical"
             onFinish={handleSaveCategorie}
-            initialValues={categorie}
+            autoComplete="off"
           >
             <Form.Item
               label="Libellé"
@@ -283,12 +267,11 @@ const CategorieThemeList: React.FC = () => {
             </Form.Item>
             <div
               className="flex  gap-3"
-              style={{ alignItems: "center", marginLeft: "220px" }}
+              style={{ alignItems: "center", justifyContent: "flex-end" }}
             >
               <Button
+                className="white-button"
                 style={{
-                  background: "#FF7900",
-                  color: "white",
                   borderRadius: "0px",
                 }}
                 icon={<CloseOutlined />}
@@ -298,9 +281,8 @@ const CategorieThemeList: React.FC = () => {
                 Annuler
               </Button>
               <Button
+                className="button-orange"
                 style={{
-                  background: "black",
-                  color: "white",
                   borderRadius: "0px",
                 }}
                 htmlType="submit"

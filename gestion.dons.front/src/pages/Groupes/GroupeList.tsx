@@ -1,35 +1,29 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import {
-  Table,
-  Button,
-  Input,
-  Space,
-  TablePaginationConfig,
-  message,
-  Popconfirm,
-} from "antd";
-import axios from "axios";
+import React, { useCallback, useEffect, useState } from "react";
+import { Table, Button, Input, message, Popconfirm, Modal } from "antd";
+import { useNavigate } from "react-router-dom";
 import {
   DeleteOutlined,
   EditOutlined,
   PlusOutlined,
   SearchOutlined,
   DownOutlined,
-  UploadOutlined,
+  EyeOutlined,
 } from "@ant-design/icons";
-import DataGroupe from "../../model/Groupe.model";
-import { fetchGroupes } from "../../services/GroupeService";
 import { exportToExcel } from "../../services/exportToExcel";
+import GroupeService from "../../services/GroupeService";
 
 const size = "large";
 
+const titleStyle = {
+  color: "#0B5ED7",
+};
+
 const GroupeList: React.FC = () => {
   const navigate = useNavigate();
-
-  const [data, setData] = useState<DataGroupe[]>([]);
+  const [data, setData] = useState([]);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [selectedGroupe, setSelectedGroupe] = useState(null);
 
   const [pagination, setPagination] = useState({
     page: 0,
@@ -38,15 +32,14 @@ const GroupeList: React.FC = () => {
     filter: "",
   });
 
-  const handleDeleteGroupe = (id: number) => {
-    axios
-      .delete(`/groupes/${id}`)
+  const handleDeleteGroupe = (id) => {
+    GroupeService.deleteGroupe(id)
       .then(() => {
-        message.success("Groupe supprimé avec succès !");
+        message.success("groupe supprimé avec succès !");
         loadData();
       })
       .catch((err) => {
-        console.log(err);
+        console.error(err);
         message.error(
           "Une erreur s'est produite lors de la suppression du groupe."
         );
@@ -56,7 +49,7 @@ const GroupeList: React.FC = () => {
   const loadData = useCallback(async () => {
     setLoading(true);
     try {
-      const result = await fetchGroupes(
+      const result = await GroupeService.fetchGroupes(
         pagination.page,
         pagination.size,
         pagination.sort,
@@ -78,11 +71,11 @@ const GroupeList: React.FC = () => {
     loadData();
   }, [loadData]);
 
-  const handleSearch = (value: string) => {
+  const handleSearch = (value) => {
     setPagination((prev) => ({ ...prev, page: 0, filter: value }));
   };
 
-  const handlePagination = (newPagination: TablePaginationConfig, _, sort) => {
+  const handlePagination = (newPagination, _, sort) => {
     setPagination((prev) => ({
       ...prev,
       page: newPagination.current ? newPagination.current - 1 : 0,
@@ -92,13 +85,29 @@ const GroupeList: React.FC = () => {
         : prev.sort,
     }));
   };
+  const handleCancelDelete = () => {
+    message.info("Suppression annulée");
+  };
 
-  const columns = [
+  const handleEditGroupe = (id) => {
+    navigate(`/addGroupe/${id}`);
+  };
+
+  const handleViewGroupe = async (id) => {
+    try {
+      const groupe = await GroupeService.getGroupeById(id);
+      setSelectedGroupe(groupe);
+    } catch (error) {
+      console.error("Erreur lors de la récupération des détails du groupe");
+    }
+  };
+
+  const columns: any[] = [
     {
       title: "libelle",
       dataIndex: "libelle",
       key: "libelle",
-      width:150,
+      width: 150,
       sorter: true,
     },
     {
@@ -122,7 +131,6 @@ const GroupeList: React.FC = () => {
       key: "codeMarchand",
       width: 150,
       sorter: true,
-
     },
     {
       title: "rccm",
@@ -149,7 +157,7 @@ const GroupeList: React.FC = () => {
       title: "numeroTelephone",
       dataIndex: "numeroTelephone",
       key: "numeroTelephone",
-      width: 150,
+      width: 200,
       sorter: true,
     },
     {
@@ -178,19 +186,22 @@ const GroupeList: React.FC = () => {
       key: "actions",
       fixed: "right",
       width: 150,
-      render: (text: any, record: any) => (
-        <Space>
-          <Link to={`/addGroupe/${record.key}`}>
-            <Button
-              type="link"
-              style={{ color: "#FF7900" }}
-              size={size}
-              icon={<EditOutlined />}
-            />
-          </Link>
+      render: (text, record) => (
+        <div style={{ display: "flex" }}>
+          <Button
+            type="link"
+            style={{ color: "#FF7900" }}
+            size={size}
+            icon={<EditOutlined />}
+            onClick={() => handleEditGroupe(record.id)}
+          />
+          <Button type="link" onClick={() => handleViewGroupe(record.id)}>
+            <EyeOutlined style={{ color: "black" }} />
+          </Button>
           <Popconfirm
             title="Êtes-vous sûr de vouloir supprimer ce groupe ?"
-            onConfirm={() => handleDeleteGroupe(record.key)}
+            onConfirm={() => handleDeleteGroupe(record.id)}
+            onCancel={handleCancelDelete}
             okText="Oui"
             cancelText="Non"
             okButtonProps={{ style: { color: "white", background: "#66BB6A" } }}
@@ -205,94 +216,150 @@ const GroupeList: React.FC = () => {
               icon={<DeleteOutlined />}
             />
           </Popconfirm>
-        </Space>
+        </div>
       ),
     },
   ];
 
-  const dataSource = useMemo(() => {
-    return data?.map((item, index) => ({
-      key: item.id,
-      index: index + 1,
-      libelle: item.libelle,
-      description: item.description,
-      ninea: item.ninea,
-      codeMarchand: item.codeMarchand,
-      rccm: item.rccm,
-      numeroTelephone: item.numeroTelephone,
-      logo: item.logo,
-      tag: item.tag,
-      dateCreation: item.dateCreation,
-      dateModification: item.dateModification,
-      typeGroupe: item.typeGroupe,
-    }));
-  }, [data]);
-
   const handleAddGroupe = () => {
-    navigate("/addgroupe");
+    navigate("/addGroupe");
   };
 
   return (
     <>
-      <div style={{ marginRight: "20px" }}>
-        <h1 className="text-3xl font-bold my-3"> Groupes</h1>
-        <div className="flex justify-between gap-3">
-          <Input
-            placeholder="Rechercher par libelle"
-            suffix={<SearchOutlined />}
+      <h1 className="text-3xl font-bold my-3">Groupes</h1>
+      <div className="flex justify-between gap-3">
+        <Input
+          placeholder="Rechercher par libelle"
+          suffix={<SearchOutlined />}
+          style={{ borderRadius: "0px" }}
+          size={size}
+          value={pagination.filter}
+          className="flex-1"
+          onChange={(e) => handleSearch(e.target.value)}
+        />
+        <div className="flex gap-2">
+          <Button
             style={{
+             
               borderRadius: "0px",
             }}
+            className="white-button"
+            icon={<PlusOutlined />}
             size={size}
-            value={pagination.filter}
-            className="flex-1"
-            onChange={(e) => handleSearch(e.target.value)}
-          />
-          <div className="flex gap-2">
-            <Button
-              style={{
-                background: "black",
-                color: "white",
-                margin: "0 10px",
-                borderRadius: "0px",
-              }}
-              icon={<PlusOutlined />}
-              size={size}
-              onClick={handleAddGroupe}
-            >
-              Nouveau
-            </Button>
-            <Button
-              style={{
-                background: "#FF7900",
-                color: "white",
-                margin: "0 10px",
-                borderRadius: "0px",
-              }}
-              icon={<DownOutlined />}
-              size={size}
-              onClick={() => exportToExcel(dataSource)}
-            >
-              Exporter
-            </Button>
-          </div>
-        </div>
-        <div style={{ marginTop: "20px" }}>
-          <Table
-            loading={loading}
-            scroll={{ x: "scroll" }}
-            bordered
-            onChange={handlePagination}
-            columns={columns as any}
-            dataSource={dataSource}
-            pagination={{
-              current: pagination.page + 1,
-              pageSize: pagination.size,
-              total: totalItems,
+            onClick={handleAddGroupe}
+          >
+            Nouveau
+          </Button>
+          <Button
+            style={{
+            
+              borderRadius: "0px",
             }}
-          />
+            className="button-orange"
+            icon={<DownOutlined />}
+            size={size}
+            onClick={() => exportToExcel(data)}
+          >
+            Exporter
+          </Button>
         </div>
       </div>
+      <div style={{ marginTop: "20px" }}>
+        <Table
+          loading={loading}
+          scroll={{ x: "scroll" }}
+          bordered
+          onChange={handlePagination}
+          columns={columns as any}
+          dataSource={data}
+          rowKey={(r) => r.id}
+          pagination={{
+            current: pagination.page + 1,
+            pageSize: pagination.size,
+            total: totalItems,
+          }}
+        />
+      </div>
+      <Modal
+        title="Détails du groupe"
+        visible={selectedGroupe !== null}
+        onCancel={() => setSelectedGroupe(null)}
+        footer={null}
+        width={10000}
+      >
+        {selectedGroupe && (
+          <Table
+            dataSource={[selectedGroupe]}
+            columns={[
+              {
+                title: <span style={titleStyle}> Libelle</span>,
+                dataIndex: "libelle",
+                key: "libelle",
+                width: 150,
+              },
+              {
+                title: <span style={titleStyle}>Description</span>,
+                dataIndex: "description",
+                key: "description",
+                width: 150,
+              },
+              {
+                title: <span style={titleStyle}>Ninea</span>,
+                dataIndex: "ninea",
+                key: "ninea",
+                width: 150,
+              },
+
+              {
+                title: <span style={titleStyle}>Code Marchand</span>,
+                dataIndex: "codeMarchand",
+                key: "age",
+                width: 150,
+              },
+              {
+                title: <span style={titleStyle}> Numero Telephone</span>,
+                dataIndex: "numeroTelephone",
+                key: "numeroTelephone",
+                width: 150,
+              },
+              {
+                title: <span style={titleStyle}> Type Groupe</span>,
+                dataIndex: "typeGroupe",
+                key: "typeGroupe",
+                width: 150,
+              },
+              {
+                title: <span style={titleStyle}>Tag</span>,
+                dataIndex: "tag",
+                key: "tag",
+                width: 150,
+              },
+              {
+                title: <span style={titleStyle}>Logo</span>,
+                dataIndex: "logo",
+                key: "logo",
+                width: 200,
+              },
+              {
+                title: <span style={titleStyle}>Date Creation</span>,
+                dataIndex: "dateCreation",
+                key: "dateCreation",
+                width: 200,
+              },
+              {
+                title: <span style={titleStyle}>Date Modification</span>,
+                dataIndex: "dateModification",
+                key: "dateModification",
+                width: 200,
+              },
+            ]}
+            bordered
+            size="large"
+            pagination={false}
+          />
+        )}
+      </Modal>
     </>
   );
 };

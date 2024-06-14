@@ -1,43 +1,36 @@
 import React, { useEffect, useState, useCallback, useMemo } from "react";
+import axios from "axios";
 import {
   Card,
+  Space,
+  Statistic,
   Row,
   Col,
-  Statistic,
+  TablePaginationConfig,
   Table,
   Input,
-  TablePaginationConfig,
 } from "antd";
-import "../dashboard/Dashboard.css";
+import Chart from "chart.js/auto";
 import {
-  UserOutlined,
-  AppstoreAddOutlined,
   TeamOutlined,
+  UserOutlined,
   ContainerOutlined,
-  CopyrightCircleOutlined,
+  AppstoreAddOutlined,
   SearchOutlined,
 } from "@ant-design/icons";
-import axios from "axios";
-import { Link, useNavigate } from "react-router-dom";
-import Chart from "chart.js/auto";
+import { Link } from "react-router-dom";
+import "../dashboard/Dashboard.css";
 import { DataCampagne } from "../../model/Campagne.model";
-import {
-  fetchActiveCampagnes,
-} from "../../services/CampagneService";
-// import { use } from "i18next";
-const Dashboard: React.FC = () => {
-  const size = "large";
-  const [patientCount, setPatientCount] = useState<number>(0);
-  const [categorieCount, setCategorieCount] = useState<number>(0);
-  const [groupeCount, setGroupeCount] = useState<number>(0);
-  const [campagneCount, setCampagneCount] = useState<number>(0);
-  const [countCampagne, setCountCampagne] = useState<number>(0);
-  const [dataLoaded, setDataLoaded] = useState<boolean>(false);
-  const navigate = useNavigate();
+import { fetchActiveCampagnes } from "../../services/ActiveCampagneService";
+
+function Dashboard() {
+  const [familles, setFamilles] = useState(0);
+  const [mineurs, setMineurs] = useState(0);
+  const [livrables, setLivrables] = useState(0);
+  const [livrableMins, setLivrableMins] = useState(0);
   const [data, setData] = useState<DataCampagne[]>([]);
   const [totalItems, setTotalItems] = useState(0);
   const [loading, setLoading] = useState(false);
-
   const [pagination, setPagination] = useState({
     page: 0,
     size: 10,
@@ -91,7 +84,6 @@ const Dashboard: React.FC = () => {
       dataIndex: "reference",
       key: "reference",
       width: 120,
-
       sorter: true,
     },
 
@@ -100,7 +92,6 @@ const Dashboard: React.FC = () => {
       dataIndex: "description",
       key: "description",
       width: 150,
-
       sorter: true,
     },
 
@@ -134,6 +125,7 @@ const Dashboard: React.FC = () => {
       active: item.active,
     }));
   }, [data]);
+  const size = "large";
 
   const initBarChart = useCallback(() => {
     const existingBarChart = Chart.getChart("myBarChart");
@@ -144,36 +136,64 @@ const Dashboard: React.FC = () => {
     const ctx = document.getElementById("myBarChart") as HTMLCanvasElement;
     if (!ctx) return;
 
-    // ctx.width = 2600;
-    // ctx.height = 3000;
-
     new Chart(ctx, {
-      type: "pie",
+      type: "bar",
       data: {
         labels: [
           "Patients",
-          "Catégories",
+          "Catégories Thèmes",
           "Groupes",
           "Thèmes Campagnes",
-          "Campagnes",
         ],
         datasets: [
           {
             label: "Nombre",
-            data: [
-              patientCount,
-              categorieCount,
-              groupeCount,
-              campagneCount,
-              countCampagne,
-            ],
-            backgroundColor: [
-              "#FFCA28",
-              "#3949AB",
-              "#4CAF50",
-              "#9575CD",
-              "#FF5252",
-            ],
+            data: [familles, mineurs, livrables, livrableMins],
+            backgroundColor: "rgba(75,192,192,0.4)",
+            borderColor: "rgba(75,192,192,1)",
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        plugins: {
+          legend: {
+            display: true,
+            position: "right",
+          },
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+          },
+        },
+      },
+    });
+  }, [familles, mineurs, livrables, livrableMins]);
+
+  const initDoughnutChart = useCallback(() => {
+    const existingDoughnutChart = Chart.getChart("myDoughnutChart");
+    if (existingDoughnutChart) {
+      existingDoughnutChart.destroy();
+    }
+
+    const ctx = document.getElementById("myDoughnutChart") as HTMLCanvasElement;
+    if (!ctx) return;
+
+    new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: [
+          "Patients",
+          "Catégories Thèmes",
+          "Groupes",
+          "Thèmes Campagnes",
+        ],
+        datasets: [
+          {
+            label: "Nombre",
+            data: [familles, mineurs, livrables, livrableMins],
+            backgroundColor: ["#FFCA28", "#3949AB", "#4CAF50", "#9575CD"],
             borderColor: "#fff",
             borderWidth: 1,
           },
@@ -182,7 +202,8 @@ const Dashboard: React.FC = () => {
       options: {
         plugins: {
           legend: {
-            display: false,
+            display: true,
+            position: "right",
           },
         },
         scales: {
@@ -193,36 +214,35 @@ const Dashboard: React.FC = () => {
         },
       },
     });
-  }, [patientCount, categorieCount, groupeCount, campagneCount, countCampagne]);
+  }, [familles, mineurs, livrables, livrableMins]);
+
+  useEffect(() => {
+    initBarChart();
+    initDoughnutChart();
+  }, [initBarChart, initDoughnutChart]);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const ficheResponse = await axios.get(
+        const familleResponse = await axios.get(
           "/fiche-patients/count?supprime.equals=false"
         );
-        setPatientCount(ficheResponse.data);
+        setFamilles(familleResponse.data);
 
-        const categorieResponse = await axios.get(
+        const mineurResponse = await axios.get(
           "/categorie-themes/count?supprime.equals=false"
         );
-        setCategorieCount(categorieResponse.data);
+        setMineurs(mineurResponse.data);
 
-        const groupeResponse = await axios.get(
+        const livrableResponse = await axios.get(
           "/groupes/count?supprime.equals=false"
         );
-        setGroupeCount(groupeResponse.data);
+        setLivrables(livrableResponse.data);
 
-        const campagneResponse = await axios.get(
+        const livrableMinResponse = await axios.get(
           "/theme-campagnes/count?supprime.equals=false"
         );
-        setCampagneCount(campagneResponse.data);
-
-        const CampagneResponse = await axios.get(
-          "/campagnes/count?supprime.equals=false"
-        );
-        setCountCampagne(CampagneResponse.data);
-        setDataLoaded(true);
+        setLivrableMins(livrableMinResponse.data);
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -231,86 +251,107 @@ const Dashboard: React.FC = () => {
     fetchData();
   }, []);
 
-  useEffect(() => {
-    if (dataLoaded) {
-      // initChart();
-      initBarChart();
-    }
-  }, [dataLoaded, initBarChart]);
-
   return (
-    <>
-      <div>
-        <Col span={6} style={{ marginTop: "6%" }}>
-          <div className="canvas-container">
-            <canvas id="myBarChart"></canvas>
-          </div>
+    <Space size={20} direction="vertical" style={{ width: "100%" }}>
+      <h1 className="text-3xl font-bold my-3">Dashboard</h1>
+      <Row gutter={[32, 32]}>
+        <Col xs={24} md={12} lg={8}>
+          <Row gutter={[16, 16]}>
+            <Col span={24}>
+              <Link to="/patient">
+                <DashboardCard
+                  icon={
+                    <UserOutlined
+                      style={{
+                        color: "red",
+                        backgroundColor: "rgba(255,0,0,0.25)",
+                        borderRadius: 20,
+                        fontSize: 24,
+                        padding: 8,
+                      }}
+                    />
+                  }
+                  title={"Patients"}
+                  value={familles}
+                />
+              </Link>
+            </Col>
+            <Col span={24}>
+              <Link to="/categorieTheme">
+                <DashboardCard
+                  icon={
+                    <AppstoreAddOutlined
+                      style={{
+                        color: "purple",
+                        backgroundColor: "rgba(0,255,255,0.25)",
+                        borderRadius: 20,
+                        fontSize: 24,
+                        padding: 8,
+                      }}
+                    />
+                  }
+                  title={"Catégories Thèmes"}
+                  value={mineurs}
+                />
+              </Link>
+            </Col>
+          </Row>
         </Col>
-        <Row gutter={[16, 16]} justify="center" style={{ marginTop: "40px" }}>
-          <Col span={4}>
-            <Link to="/patient">
-              <Card bordered={false} className="dashboard-card">
-                <Statistic
-                  title="Patients"
-                  value={patientCount}
-                  valueStyle={{ color: "#FFCA28" }}
-                  prefix={<UserOutlined />}
+        <Col xs={24} md={12} lg={8}>
+          <Row gutter={[16, 16]}>
+            <Col span={24}>
+              <Link to="/groupe">
+                <DashboardCard
+                  icon={
+                    <TeamOutlined
+                      style={{
+                        color: "green",
+                        backgroundColor: "rgba(0,255,0,0.25)",
+                        borderRadius: 20,
+                        fontSize: 24,
+                        padding: 8,
+                      }}
+                    />
+                  }
+                  title={"Groupes"}
+                  value={livrables}
                 />
-              </Card>
-            </Link>
-          </Col>
-
-          <Col span={4}>
-            <Link to="/themeCampagne">
-              <Card bordered={false} className="dashboard-card">
-                <Statistic
-                  title="Thème Campagnes"
-                  value={campagneCount}
-                  valueStyle={{ color: "#3949AB" }}
-                  prefix={<ContainerOutlined />}
+              </Link>
+            </Col>
+            <Col span={24}>
+              <Link to="/themeCampagne">
+                <DashboardCard
+                  icon={
+                    <ContainerOutlined
+                      style={{
+                        color: "blue",
+                        backgroundColor: "rgba(0,0,255,0.25)",
+                        borderRadius: 20,
+                        fontSize: 24,
+                        padding: 8,
+                      }}
+                    />
+                  }
+                  title={"Thèmes Campagnes"}
+                  value={livrableMins}
                 />
-              </Card>
-            </Link>
-          </Col>
-          <Col span={4}>
-            <Link to="/groupe">
-              <Card bordered={false} className="dashboard-card">
-                <Statistic
-                  title="Groupes"
-                  value={groupeCount}
-                  valueStyle={{ color: "#4CAF50" }}
-                  prefix={<TeamOutlined />}
-                />
-              </Card>
-            </Link>
-          </Col>
-          <Col span={4}>
-            <Link to="/categorieTheme">
-              <Card bordered={false} className="dashboard-card">
-                <Statistic
-                  title="Catégorie Thèmes"
-                  value={categorieCount}
-                  valueStyle={{ color: "#9575CD" }}
-                  prefix={<AppstoreAddOutlined />}
-                />
-              </Card>
-            </Link>
-          </Col>
-          <Col span={4}>
-            <Link to="/campagne">
-              <Card bordered={false} className="dashboard-card">
-                <Statistic
-                  title="Campagnes"
-                  value={countCampagne}
-                  valueStyle={{ color: "#FF5252" }}
-                  prefix={<CopyrightCircleOutlined />}
-                />
-              </Card>
-            </Link>
-          </Col>
-        </Row>
-      </div>
-      <div style={{ marginRight: "20px", marginTop: "50px" }}>
+              </Link>
+            </Col>
+          </Row>
+        </Col>
+        <Col xs={24} md={6} lg={8}>
+          <Card
+            style={{
+              maxHeight: "328px",
+              height: "auto",
+              marginTop: "8px",
+            }}
+          >
+            <canvas id="myDoughnutChart"></canvas>
+          </Card>
+        </Col>
+      </Row>
+      <div style={{ marginRight: "20px", marginTop: "10px" }}>
         <h1 className="text-3xl font-bold my-3">Liste des Campagnes actives</h1>
         <div className="flex justify-between gap-3">
           <Input
@@ -341,8 +382,27 @@ const Dashboard: React.FC = () => {
           />
         </div>
       </div>
-    </>
+    </Space>
   );
-};
+}
+
+function DashboardCard({ title, value, icon }) {
+  return (
+    <Card
+      className="dashboard"
+      style={{
+        width: "100%",
+        height: 150,
+        margin: 8,
+        padding: 10,
+      }}
+    >
+      <Space direction="horizontal">
+        {icon}
+        <Statistic title={title} value={value} />
+      </Space>
+    </Card>
+  );
+}
 
 export default Dashboard;

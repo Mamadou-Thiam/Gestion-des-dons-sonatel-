@@ -1,98 +1,70 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, Input, message, Select } from "antd";
-import axios from "axios";
 import { CloseOutlined, SaveOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router";
-import DataGroupe from "../../model/Groupe.model";
+import GroupeService from "../../services/GroupeService";
+
 const { Option } = Select;
 
-const GroupeForm: React.FC = () => {
+const GroupeForm = () => {
   const [form] = Form.useForm();
   const { id } = useParams();
-
-  const [groupe, setgroupe] = useState<DataGroupe>();
-
+  const [groupe, setGroupe] = useState(null);
   const navigate = useNavigate();
+
   const handleCancel = () => {
     navigate("/groupe");
   };
 
   useEffect(() => {
     if (id) {
-      axios
-        .get(`/groupes/${id}`)
+      GroupeService.getGroupeById(id)
         .then((res) => {
-          setgroupe({
-            id: res.data.id,
-            libelle: res.data.libelle,
-            description: res.data.description,
-            ninea: res.data.ninea,
-            codeMarchand: res.data.codeMarchand,
-            rccm: res.data.rccm,
-            dateCreation:res.data.dateCreation,
-            dateModification:res.data.dateModification,
-            numeroTelephone: res.data.numeroTelephone,
-            supprime: res.data.supprime,
-            typeGroupe: res.data.typeGroupe,
-            tag: res.data.tag,
-            logo: res.data.logo,
-          });
-          form.setFieldsValue({
-            id: res.data.id,
-            libelle: res.data.libelle,
-            description: res.data.description,
-            ninea: res.data.ninea,
-            codeMarchand: res.data.codeMarchand,
-            rccm: res.data.rccm,
-            dateCreation:res.data.dateCreation,
-            dateModification:res.data.dateModification,
-            numeroTelephone: res.data.numeroTelephone,
-            tag: res.data.tag,
-            logo: res.data.logo,
-            typeGroupe: res.data.typeGroupe,
-          });
+          setGroupe(res);
+          form.setFieldsValue(res);
         })
         .catch((err) => {
-          console.log("Error from Update");
+          console.log("Erreur lors de la récupération du groupe:", err);
         });
     }
   }, [id, form]);
 
-  const handleSaveGroupe = (values) => {
-    const data = {
-      id: groupe?.id,
-      ...groupe,
-      ...values,
-    };
+  const handleSaveGroupe = async (values) => {
+    try {
+      const data = {
+        id: groupe?.id,
+        ...groupe,
+        ...values,
+      };
 
-    const promise = groupe
-      ? axios.put(`/groupes/${id}`, data)
-      : axios.post("/groupes", data);
+      let savedGroupe;
+      if (groupe) {
+        savedGroupe = await GroupeService.updateGroupe(id, data);
+      } else {
+        savedGroupe = await GroupeService.createGroupe(data);
+      }
 
-    promise
-      .then((res) => {
-        console.log(res);
-        message.success("Groupe enregistré avec succès !");
-        navigate("/groupe");
-      })
-      .catch((err) => {
-        console.log(err);
-        console.log("Error in Save!");
-        message.error("Erreur lors de l'enregistrement du groupe.");
-      });
+      message.success("groupe enregistré avec succès !");
+      navigate("/groupe");
+    } catch (error) {
+      console.log("Erreur lors de l'enregistrement du groupe:", error);
+      message.error("Erreur lors de l'enregistrement du groupe.");
+    }
   };
 
   return (
     <div>
       <h1 className="text-3xl font-bold my-3">
         {groupe
-          ? "Formulaire de modification    d'un groupe"
+          ? "Formulaire de modification d'un groupe"
           : "Formulaire d'ajout d'un groupe"}
       </h1>
 
       <Form
         style={{ marginTop: "50px" }}
         form={form}
+        autoComplete="off"
+
         layout="horizontal"
         size="large"
         className="custom-form"
@@ -152,11 +124,13 @@ const GroupeForm: React.FC = () => {
             <Input style={{ borderRadius: 0 }} />
           </Form.Item>
         </div>
-        <div className="flex items-center justify-center mt-20">
-          <div className="w-full">
+
+        <div className="flex justify-end mt-4">
+          <div>
             <Button
-              className="bg-orange-500 text-white rounded-0 w-full"
+              className="white-button"
               onClick={handleCancel}
+              style={{borderRadius:"0px"}}
             >
               <span className="mr-2">
                 <CloseOutlined />
@@ -164,10 +138,12 @@ const GroupeForm: React.FC = () => {
               Annuler
             </Button>
           </div>
-          <div className="w-full mx-10">
+          <div>
             <Button
-              className="bg-black text-white rounded-0 w-full"
+              style={{ margin: "0 10px" ,borderRadius:"0px"}}
+              className="button-orange"
               htmlType="submit"
+
             >
               <span className="mr-2">
                 <SaveOutlined />

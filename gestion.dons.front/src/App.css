@@ -3,7 +3,7 @@
 }
 
 Button {
-  border-radius: "0px";
+  border-radius: "0"!important;
 }
 
 .ant-menu-dark .ant-menu-item-selected {
@@ -37,7 +37,6 @@ Button {
 
 .custom-sider .ant-menu-item-icon {
   font-size: 30px;
-  
 }
 
 .custom-sider .ant-menu-item {
@@ -79,7 +78,7 @@ Input{
   display: inline-block;
   border-radius: 50%;
   margin-left: 5px;
-  background-color: blue;
+  background-color: #4096FF;
 }
 
 .red-circle {
@@ -88,5 +87,64 @@ Input{
   display: inline-block;
   border-radius: 50%;
   margin-left: 5px;
-  background-color: red;
+  background-color:  rgba(128, 128, 128, 0.821);
+}
+
+
+.custom-sider .ant-menu-item {
+  padding-bottom: 4px; 
+  padding-top: 8px; 
+}
+
+.ant-menu-vertical >.ant-menu-item {
+  height: auto;
+}
+
+.login-form {
+  label {
+    min-width: 130px;
+  }
+}
+.button-orange {
+  background-color: #FF7900;
+  border: 1px solid;
+  border-color: #FF7900;
+  color: white;
+  text-transform: uppercase;
+  padding: 10px 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+
+  &:hover,
+  &:focus-within {
+    background-color: white;
+    color: #FF7900;
+    border-color: #FF7900;
+  }
+  white-space: nowrap;
+}
+
+
+
+.white-button {
+  background-color: white;
+  border: 1px solid;
+  border-color: black;
+  color: black;
+  text-transform: uppercase;
+  padding: 10px 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 0px;
+  font-weight: bold;
+
+  &:hover,
+  &:focus-within {
+    color: white;
+    border-color: white;
+  }
+  white-space: nowrap;
 }

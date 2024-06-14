@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Layout, Menu, Button } from "antd";
+import { Layout, Menu, Modal } from "antd";
 import {
   AppstoreAddOutlined,
   TeamOutlined,
@@ -8,6 +8,7 @@ import {
   AreaChartOutlined,
   CopyrightCircleOutlined,
   LogoutOutlined,
+  PayCircleOutlined,
 } from "@ant-design/icons";
 import { Routes, Route, Link, useNavigate } from "react-router-dom";
 import PatientList from "./pages/fiche-Patients/PatientList";
@@ -30,7 +31,8 @@ import ThemeCampagneList from "./pages/Theme-Campagnes/ThemeCampagneList";
 import CategorieThemeList from "./pages/Categories-Theme/CategorieThemeList";
 import Login from "./pages/Login";
 import CampagneList from "./pages/Campagnes/CampagneList";
-// import { Footer } from "antd/es/layout/layout";
+import DonList from "./pages/dons/DonList";
+import DonForm from "./pages/dons/DonForm";
 
 const { Header, Content, Sider } = Layout;
 
@@ -52,12 +54,21 @@ const App: React.FC = () => {
     window.location.reload();
   };
 
+  const confirmLogout = () => {
+    Modal.confirm({
+      title: "Confirmation",
+      content: "Êtes-vous sûr de vouloir vous déconnecter ?",
+      okText: "OK",
+      onOk: logout,
+      onCancel: () => {},
+    });
+  };
+
   const userToken = getUserToken();
 
   axios.interceptors.request.use(async (req) => {
     console.log("Calling axios", req.url);
     if (!req.url.startsWith("/tokens")) {
-      //const token = await getKeycloakToken();
       const token = getUserToken();
       console.log(isTokenExpired(), token);
       if (token) {
@@ -112,12 +123,18 @@ const App: React.FC = () => {
       icon: <CopyrightCircleOutlined />,
       path: "/campagne",
     },
-    // {
-    //   key: "7",
-    //   label: "Dons",
-    //   icon: <CopyrightCircleOutlined />,
-    //   path: "/dons",
-    // },
+    {
+      key: "7",
+      label: "Dons",
+      icon: <PayCircleOutlined />,
+      path: "/don",
+    },
+    {
+      key: "8",
+      label: "Déconnexion",
+      icon: <LogoutOutlined />,
+      onClick: confirmLogout,
+    },
   ];
 
   return (
@@ -129,7 +146,7 @@ const App: React.FC = () => {
           onCollapse={(value) => setCollapsed(value)}
           style={{
             overflow: "auto",
-            height: "100vh",
+            height: "120vh",
             position: "fixed",
             backgroundColor: "#000000",
           }}
@@ -142,7 +159,12 @@ const App: React.FC = () => {
             style={{ backgroundColor: "#000000" }}
           >
             {items.map((item) => (
-              <Menu.Item key={item.key} icon={item.icon}>
+              <Menu.Item
+                key={item.key}
+                icon={item.icon}
+                onClick={item.onClick} // Ajout de la fonction de clic pour la déconnexion
+                style={{ display: "flex", alignItems: "center" }}
+              >
                 <Link to={item.path}>{item.label}</Link>
               </Menu.Item>
             ))}
@@ -168,19 +190,9 @@ const App: React.FC = () => {
             <div
               style={{ display: "flex", color: "white", marginLeft: "15px" }}
             >
-              <h1 className="text-3xl font-bold my-3 margin-right:10px">
-                {" "}
-                Wesalo BackOffice{" "}
+              <h1 className="text-3xl flex justify-between gap-3 mt-4">
+                Wesalo
               </h1>
-              <div>
-                <Button
-                  icon={<LogoutOutlined />}
-                  className="customButton"
-                  onClick={logout}
-                >
-                  Deconnexion
-                </Button>
-              </div>
             </div>
           </Header>
         )}
@@ -211,23 +223,12 @@ const App: React.FC = () => {
             <Route path="addCategorie/:id" element={<CategorieThemeList />} />
             <Route path="/addCampagne" element={<CampagneForm />} />
             <Route path="/addCampagne/:id" element={<CampagneForm />} />
+            <Route path="/don" element={<DonList />} />
+            <Route path="/addDon" element={<DonForm />} />
 
             <Route path="*" element={<NotFound />} />
           </Routes>
         </Content>
-        {/* {userToken && (
-          <Footer
-            style={{
-              textAlign: "center",
-              position: "fixed",
-              width: "100%",
-              bottom: 0,
-              zIndex: 3,
-            }}
-          >
-            Ant Design ©{new Date().getFullYear()} Created by Ant UED
-          </Footer>
-        )} */}
       </Layout>
     </Layout>
   );

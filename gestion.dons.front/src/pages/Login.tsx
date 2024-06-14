@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from "react";
-import IbouSvg from "../assets/images/login/ibou-desktop.svg";
-import Logo from "../assets/images/logo-orange.png";
+import IbouSvg from "../assets/images/login/undraw_login_re_4vu2.svg";
+// import Logo from "../assets/images/logo-orange.png";
 import { Form, Input, Button, Modal } from "antd";
 import {
   connectUser,
   getUserToken,
-  isTokenExpired,
+  // isTokenExpired,
   saveUserToken,
 } from "../services/KeycloakService";
 import { useNavigate } from "react-router";
@@ -41,11 +41,9 @@ const Login: React.FC = () => {
   return (
     <div className="min-h-screen flex flex-col lg:flex-row">
       <div className="w-100 lg:w-2/6 login-left bg-black flex flex-col items-center justify-center gap-5">
-        <img src={Logo} alt="Logo" height={60} width={60} />
+        {/* <img src={Logo} alt="Logo" height={60} width={60} /> */}
         <img src={IbouSvg} alt="Ibou" height={300} width={500} />
-        <h1 className="text-white text-[40px] font-bold mt-5">
-          Wesalo BackOffife
-        </h1>
+        <h1 className="text-white text-[40px] font-bold mt-5">Wesalo</h1>
       </div>
       <div className="w-100 lg:w-4/6 flex justify-center items-center my-[50px] lg:my-0">
         <div className="min-w-[50%]">
@@ -66,7 +64,7 @@ const Login: React.FC = () => {
                 },
               ]}
             >
-              <Input size="large" />
+              <Input size="large" className="rounded-none" />
             </Form.Item>
 
             <Form.Item
@@ -79,10 +77,10 @@ const Login: React.FC = () => {
                 },
               ]}
             >
-              <Input.Password size="large" />
+              <Input.Password size="large" className="rounded-none" />
             </Form.Item>
             <Form.Item className="flex items-center justify-center">
-              <Button className="button-orange" htmlType="submit">
+              <Button className="button-orange rounded-none" htmlType="submit">
                 Se connecter
               </Button>
             </Form.Item>

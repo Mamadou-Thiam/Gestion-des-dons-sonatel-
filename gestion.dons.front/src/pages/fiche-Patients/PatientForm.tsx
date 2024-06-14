@@ -1,57 +1,56 @@
 import React, { useEffect, useState } from "react";
 import { Button, Form, Input, message, Select } from "antd";
-import axios from "axios";
 import { CloseOutlined, SaveOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router";
 import "./fiche.css";
-import { DataPatient } from "../../model/fiche-patient.model";
+import PatientService from "../../services/PatientService";
+
 const { Option } = Select;
 
-const PatientForm: React.FC = () => {
+const PatientForm = () => {
   const [form] = Form.useForm();
   const { id } = useParams();
-
-  const [patient, setPatient] = useState<DataPatient>();
-
+  const [patient, setPatient] = useState(null);
   const navigate = useNavigate();
+
   const handleCancel = () => {
     navigate("/patient");
   };
+
   useEffect(() => {
     if (id) {
-      axios
-        .get(`/fiche-patients/${id}`)
+      PatientService.getPatientById(id)
         .then((res) => {
-          setPatient(res.data);
-          form.setFieldsValue(res.data);
+          setPatient(res);
+          form.setFieldsValue(res);
         })
         .catch((err) => {
-          console.log("Error from Update");
+          console.log("Erreur lors de la récupération du patient:", err);
         });
     }
   }, [id, form]);
 
   const handleSavePatient = async (values) => {
-    const data = {
-      id: patient?.id,
-      ...patient,
-      ...values,
-    };
+    try {
+      const data = {
+        id: patient?.id,
+        ...patient,
+        ...values,
+      };
 
-    const promise = patient
-      ? axios.put(`/fiche-patients/${id}`, data)
-      : axios.post("/fiche-patients", data);
+      let savedPatient;
+      if (patient) {
+        savedPatient = await PatientService.updatePatient(id, data);
+      } else {
+        savedPatient = await PatientService.createPatient(data);
+      }
 
-    promise
-      .then((res) => {
-        message.success("Patient enregistré avec succès !");
-        navigate("/patient");
-      })
-      .catch((err) => {
-        console.log(err);
-        console.log("Error in Save!");
-        message.error("Erreur lors de l'enregistrement du patient.");
-      });
+      message.success("Patient enregistré avec succès !");
+      navigate("/patient");
+    } catch (error) {
+      console.log("Erreur lors de l'enregistrement du patient:", error);
+      message.error("Erreur lors de l'enregistrement du patient.");
+    }
   };
 
   return (
@@ -65,6 +64,7 @@ const PatientForm: React.FC = () => {
       <Form
         style={{ marginTop: "50px" }}
         form={form}
+        autoComplete="off"
         layout="horizontal"
         size="large"
         className="custom-form"
@@ -140,11 +140,12 @@ const PatientForm: React.FC = () => {
           </Form.Item>
         </div>
 
-        <div className="flex items-center justify-center mt-20">
-          <div className="w-full">
+        <div className="flex justify-end mt-4">
+          <div>
             <Button
-              className="bg-orange-500 text-white rounded-0 border-none w-full"
+              className="white-button"
               onClick={handleCancel}
+              style={{ borderRadius: "0px" }}
             >
               <span className="mr-2">
                 <CloseOutlined />
@@ -152,10 +153,11 @@ const PatientForm: React.FC = () => {
               Annuler
             </Button>
           </div>
-          <div className="w-full mx-10 ">
+          <div style={{ margin: " 0 10px" }}>
             <Button
-              className="bg-black text-white rounded-0 border-none w-full"
+              className="button-orange"
               htmlType="submit"
+              style={{ borderRadius: "0px" }}
             >
               <span className="mr-2">
                 <SaveOutlined />
